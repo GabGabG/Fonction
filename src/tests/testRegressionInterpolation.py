@@ -1,6 +1,6 @@
 # import envTests
-from CodeUtilitaireSupplementaire.tests.customTestsUnitaires import CustomTestsUnitaires, main
-from CodeUtilitaireSupplementaire import regression_interpolation as r_i
+from src.tests.customTestsUnitaires import CustomTestsUnitaires, main
+from src import regression_interpolation as r_i
 import numpy as np
 from scipy.interpolate import interp1d
 

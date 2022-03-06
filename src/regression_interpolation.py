@@ -19,7 +19,7 @@ class _Liaison:
         polynomiale ou une interpolation quadratique, mais aussi à l'aide d'une fonction si on la connaît déjà.
         :param x_obs: Iterable. Variables indépendantes observées, c'est-à-dire celles qu'on utilise si on a à effectuer
         une régression ou interpolation.
-        :param y_obs: Iterable. Variables dépendantes bservées, c'est-à-dire celles qu'on utilise si on a à effectuer
+        :param y_obs: Iterable. Variables dépendantes observées, c'est-à-dire celles qu'on utilise si on a à effectuer
         une régression ou interpolation. Doit être de même taille que x_obs.
         :param label: str. Nom donné à la _Liaison.
         """
@@ -41,7 +41,7 @@ class _Liaison:
         pour plus d'informations. Voir `concatener_a_courant` pour l'algorithme de concaténation. Par défaut, on ne
         permet pas de discontinuités dans la liaison finale, mais ces paramètres peuvent être changés à l'aide des
         variables statiques `__add_permet_discontinuites__` et `__discontinuites_epsilon__`.
-        :param other: object. Autre "objet" à concaterner.
+        :param other: object. Autre "objet" à concatener.
         :return: lm, un objet `LiaisonMixte` permettant de partitionner la manière dont on lie les variables.
         """
         lm = self.concatener_a_courant(_Liaison.__add_permet_discontinuites__, _Liaison.__discontinuites_epsilon__,
@@ -55,8 +55,8 @@ class _Liaison:
     @property
     def fonction(self) -> Callable:
         """
-        Méthode retournant l'attibut de classe `_fonction`. Étant donné que cet attribut ne doit pas être modifié, on
-        utilise la notion de @property pour s'assirer d'avoir un comportement "read only".
+        Méthode retournant l'attribut de classe `_fonction`. Étant donné que cet attribut ne doit pas être modifié, on
+        utilise la notion de @property pour s'assurer d'avoir un comportement "read only".
         :return: fct, attribut de classe `_fonction`.
         """
         fct = self._fonction
@@ -65,8 +65,8 @@ class _Liaison:
     @property
     def x_obs(self) -> np.ndarray:
         """
-        Méthode retournant l'attibut de classe `_x_obs` (copie). Étant donné que cet attribut ne doit pas être modifié,
-        on utilise la notion de @property pour s'assirer d'avoir un comportement "read only". De plus, on en retourne
+        Méthode retournant l'attribut de classe `_x_obs` (copie). Étant donné que cet attribut ne doit pas être modifié,
+        on utilise la notion de @property pour s'assurer d'avoir un comportement "read only". De plus, on en retourne
         une copie, car on peut tout de même changer les éléments internes sinon. Cela briserait complètement la
         cohérence de l'objet courant.
         :return: x_obs, copie de l'attribut de classe `_x_obs`.
@@ -77,8 +77,8 @@ class _Liaison:
     @property
     def y_obs(self) -> np.ndarray:
         """
-        Méthode retournant l'attibut de classe `_y_obs` (copie). Étant donné que cet attribut ne doit pas être modifié,
-        on utilise la notion de @property pour s'assirer d'avoir un comportement "read only". De plus, on en retourne
+        Méthode retournant l'attribut de classe `_y_obs` (copie). Étant donné que cet attribut ne doit pas être modifié,
+        on utilise la notion de @property pour s'assurer d'avoir un comportement "read only". De plus, on en retourne
         une copie, car on peut tout de même changer les éléments internes sinon. Cela briserait complètement la
         cohérence de l'objet courant.
         :return: y_obs, copie de l'attribut de classe `_y_obs`.
@@ -89,9 +89,9 @@ class _Liaison:
     @property
     def pret(self) -> bool:
         """
-        Méthode retournant si la liaison courante est prête à être utilisée. Pour qu'une liaison soit prête, il faut:
+        Méthode retournant si la liaison courante est prête à être utilisée. Pour qu'une liaison soit prête, il faut :
         - En cas de régression, celle-ci doit être effectuée, donc les paramètres optimisés pour pouvoir les utiliser.
-        - En cas d'extrapolation, celle-ci doit être effectuée, donc les splines sont déterminés pour pouvoir les
+        - En cas d'extrapolation, celle-ci doit être effectuée, donc les splines sont déterminées pour pouvoir les
         utiliser.
         :return: pret, booléen représentant si la liaison est prête ou non (i.e. on regarde si la fonction interne de
         liaison est spécifiée, donc différent de None).
@@ -102,7 +102,7 @@ class _Liaison:
     def executer(self, *args, **kwargs) -> None:
         """
         Méthode permettant la cohésion entre les différents objets mathématiques pouvant être utilisés comme "liaison".
-        Elle permet d'exécuter la préparation de la lisaison, c'est-à-dire régresser ou interpoler. Étant donné que les
+        Elle permet d'exécuter la préparation de la liaison, c'est-à-dire régresser ou interpoler. Étant donné que les
         deux cas sont assez différents, on utilise cette méthode qui généralise le concept et permet la compatibilité.
         :param args: Arguments à passer à la fonction plus spécifique. Par exemple, si l'objet courant est une liaison
         de type régression polynomiale, on doit spécifier obligatoirement le degré du polynôme.
@@ -591,18 +591,3 @@ class RegressionGenerale(_RegressionBase):
     @staticmethod
     def fonction_ln(x: np.ndarray, a: float, b: float, c: float, d: float):
         return a * np.log(x * b + c) + d
-
-
-if __name__ == '__main__':
-    x = np.linspace(-2, 4, 1_000)
-    y = np.pi + np.e * x - 4.3 * x ** 2 + x ** 3
-
-    vander_easy = np.vander(x, 4, True)
-    vander_harder = np.vstack([x ** N for N in range(4)]).T
-    vander_harderX2 = np.zeros((len(x), 4), float)
-    for i in range(len(x)):
-        for N in range(4):
-            vander_harderX2[i, N] = x[i] ** N
-
-    beta = np.linalg.inv((vander_easy.T @ vander_easy)) @ vander_easy.T @ y
-    print(beta)
