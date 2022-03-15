@@ -1,4 +1,3 @@
-# import envTests
 from src.tests.customTestsUnitaires import CustomTestsUnitaires, main
 from src import regression_interpolation as r_i
 import numpy as np

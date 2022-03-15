@@ -1,5 +1,3 @@
-# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-
 from src.tests.customTestsUnitaires import CustomTestsUnitaires, main
 from src import data_generation
 import numpy as np
