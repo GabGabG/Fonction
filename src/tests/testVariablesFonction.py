@@ -24,7 +24,7 @@ class TestsVariablesBase(CustomTestsUnitaires):
         self.assertArrayEqual(variables._valeurs, var)
         self.assertEqual(variables._iteration, 0)
         self.assertEqual(variables._len, l)
-        self.assertTrue(variables._bloquer_modifcation_taille)
+        self.assertTrue(variables._bloquer_modification_taille)
         self.assertEqual(variables.label, "Variables (base)")
 
     def test_init_constructeur_copie(self):
@@ -35,7 +35,7 @@ class TestsVariablesBase(CustomTestsUnitaires):
         self.assertArrayEqual(variables._valeurs, variables2._valeurs)
         self.assertEqual(variables2._iteration, 0)
         self.assertEqual(variables2._len, l)
-        self.assertFalse(variables2._bloquer_modifcation_taille)
+        self.assertFalse(variables2._bloquer_modification_taille)
         self.assertEqual(variables2.label, variables.label)
 
     def test_array_wrap(self):
