@@ -238,6 +238,7 @@ class LiaisonGenerale(_Liaison):
 
 class LiaisonMixte(_Liaison):
     # TODO: Faire de quoi pour LiaisonGenerale (avec variables [])
+    # TODO: Check si overlap de bornes, que faire?
     def __init__(self, liaisons: Union[_Liaison, List[_Liaison], Tuple[_Liaison, ...]],
                  discontinuites_permises: bool = False, epsilon_continuite: float = None, label: str = "Liaison mixte"):
         """

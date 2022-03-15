@@ -1,3 +1,4 @@
+import warnings
 from typing import Union, Callable, Tuple, Iterable, Sized, Type, Sequence
 from src.regression_interpolation import _Liaison, LiaisonMixte
 from numbers import Integral
@@ -35,7 +36,7 @@ class _Variables:
             raise TypeError(f"Le type de données '{dtype}' n'est pas supporté.")
         self._iteration = 0
         self._len = len(self._valeurs)
-        self._bloquer_modifcation_taille = bloque_temp
+        self._bloquer_modification_taille = bloque_temp
         # ^ Ne pas accéder à cette variable le plus possible, garde le concept cohérent.
         self.label = label_temp
 
@@ -64,10 +65,10 @@ class _Variables:
         Propriété non modifiable de l'attribut spécifiant si l'on peut modifier la taille de l'objet courant.
         :return: bloquer, bool. Booléen spécifiant si la taille de l'objet courant est fixe (`True`) ou non (`False`).
         """
-        bloquer = self._bloquer_modifcation_taille
+        bloquer = self._bloquer_modification_taille
         return bloquer
 
-    def __getitem__(self, item: Union[int, slice, Iterable]) -> Union[int, float, complex, np.ndarray]:
+    def __getitem__(self, item: Union[int, slice, Iterable]) -> Union[int, float, complex, Iterable]:
         """
         Méthode permettant d'accéder à une ou plusieurs valeurs de l'objet courant à l'aide de la syntaxe self[item],
         où item est la clé (paramètre de la fonction présente).
@@ -84,7 +85,7 @@ class _Variables:
     def __setitem__(self, cle: Union[int, slice, Iterable], valeur: Union[int, float, complex, Iterable]) -> None:
         """
         Méthode permettant de modifier une ou plusieurs valeurs de l'objet courant à l'aide de la syntaxe
-        self[cle] = valeur, où cle et valeur sont des argument de la fonction présente.
+        self[cle] = valeur, où cle et valeur sont des arguments de la fonction présente.
         :param cle: int, slice, Iterable. Clé permettant d'accéder à l'élément (ou les éléments) qu'on veut modifier.
         :param valeur: int, float, complex, Iterable. Nouvelle(s) valeur(s) qu'on veut assigner. Si cet argument ainsi
         que la clé sont scalaires, l'élément à la position `cle` sera changé à cette valeur. Si la clé n'est pas
@@ -105,7 +106,7 @@ class _Variables:
         len_ = self._len
         return len_
 
-    def __iter__(self):
+    def __iter__(self) -> '_Variables':
         """
         Méthode permettant (avec `__next__`) de rendre la classe courante (et l'objet courant) itératif en rendant
         possible l'utilisation de la fonction builtin `iter`. Permet de réinitialiser l'itération courante à 0 pour
@@ -127,7 +128,7 @@ class _Variables:
             return valeur
         raise StopIteration("Itérateur épuisé!")
 
-    def __copy__(self):
+    def __copy__(self) -> '_Variables':
         """
         Méthode permettant de faire la copie en surface à l'aide du module `copie` et de sa fonction `copy`.
         :return: copie, nouvel objet copié sur celui courant (voir la méthode `copie`)
@@ -135,7 +136,7 @@ class _Variables:
         copie = self.copie()
         return copie
 
-    def __deepcopy__(self, *args, **kwargs):
+    def __deepcopy__(self, *args, **kwargs) -> '_Variables':
         """
         Méthode permettant de faire la copie en profondeur à l'aide du module `copie` et de sa fonction `deepcopy`.
         :param args: Arguments inutilisés, mais servant à la compatibilité
@@ -195,7 +196,7 @@ class _Variables:
             ne = ~ret_inv
         return ne
 
-    def __neg__(self):
+    def __neg__(self) -> '_Variables':
         """
         Méthode permettant d'effectuer la négation de chaque terme de l'objet courant, donc de faire -self.
         :return: neg, nouvel objet dont les valeurs sont multipliées par -1 (inverse d'addition).
@@ -203,7 +204,7 @@ class _Variables:
         neg = self.__cls(-self._valeurs, self.label)
         return neg
 
-    def __pos__(self):
+    def __pos__(self) -> '_Variables':
         """
         Méthode permettant d'effectuer +self (opérateur unaire). Techniquement, ne change absolument rien.
         :return: pos, nouvel objet identique à celui courant.
@@ -211,7 +212,7 @@ class _Variables:
         pos = self.__cls(+self._valeurs, self.label)
         return pos
 
-    def __add__(self, other: Union[int, float, complex, Iterable]):
+    def __add__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant d'additionner un objet quelconque à celui courant, donc self + other. Cette addition est
         équivalente à other + self (`__radd__`).
@@ -225,7 +226,7 @@ class _Variables:
         add.label = self.label
         return add
 
-    def __radd__(self, other: Union[int, float, complex, Iterable]):
+    def __radd__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer other + self, où self est l'objet courant et où other est un autre objet
         quelconque. Voir `__add__`.
@@ -235,7 +236,7 @@ class _Variables:
         radd = self + other
         return radd
 
-    def __sub__(self, other: Union[int, float, complex, Iterable]):
+    def __sub__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de soustraire un objet quelconque à l'objet courant, donc self - other.
         :param other: int, float, complex, Iterable. Objet qu'on soustrait à l'objet courant. Si c'est un scalaire, on
@@ -248,7 +249,7 @@ class _Variables:
         sub.label = self.label
         return sub
 
-    def __rsub__(self, other: Union[int, float, complex, Iterable]):
+    def __rsub__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer la soustraction other - self, où self est l'objet courant et où other est un autre
         objet quelconque.
@@ -263,7 +264,7 @@ class _Variables:
         rsub.label = self.label
         return rsub
 
-    def __mul__(self, other: Union[int, float, complex, Iterable]):
+    def __mul__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de multiplier un objet quelconque par celui courant, donc self * other. La multiplication
         étant "terme à terme", elle est donc équivalente à other * self (`__rmul__`).
@@ -277,7 +278,7 @@ class _Variables:
         mul.label = self.label
         return mul
 
-    def __rmul__(self, other: Union[int, float, complex, Iterable]):
+    def __rmul__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de multipliser un objet quelconque par celui courant, donc other * self. Voir `__mul__`.
         :param other: int, float, complex ou Iterable. Objet quelconque qu'on multiplie à celui courant. Voir `__mil__`.
@@ -286,7 +287,7 @@ class _Variables:
         rmul = self * other
         return rmul
 
-    def __truediv__(self, other: Union[int, float, complex, Iterable]):
+    def __truediv__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de diviser l'objet courant par un autre objet quelconque, donc de faire self / other, où
         self est l'objet courant et other est un autre objet (le diviseur).
@@ -300,7 +301,7 @@ class _Variables:
         div.label = self.label
         return div
 
-    def __rtruediv__(self, other: Union[int, float, complex, Iterable]):
+    def __rtruediv__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant d'effectuer other / self, où self est l'objet courant et other est un autre objet quelconque.
         Voir `__truediv__`.
@@ -314,7 +315,7 @@ class _Variables:
         rdiv.label = self.label
         return rdiv
 
-    def __pow__(self, power: Union[int, float, complex, Iterable]):
+    def __pow__(self, power: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer l'objet courant à une puissance spécifiée par power. Cela permet d'utiliser la
         syntaxe self ** power, où self est l'objet courant (la base) et power est un autre objet servant d'exposant.
@@ -334,7 +335,7 @@ class _Variables:
         pow_.label = self.label
         return pow_
 
-    def __rpow__(self, other: Union[int, float, complex, Iterable]):
+    def __rpow__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer other ** self, où self est l'objet courant servant comme exposant et other est un
         autre objet servant comme base. Voir `__pow__`.
@@ -355,7 +356,7 @@ class _Variables:
         rpow.label = self.label
         return rpow
 
-    def __floordiv__(self, other: Union[int, float, complex, Iterable]):
+    def __floordiv__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer l'expression self // other, où self est l'objet courant et other est le diviseur.
         Cette expression est la division entière (ou euclidienne), soit trouver le quotient (et reste, mais celui-ci
@@ -371,7 +372,7 @@ class _Variables:
         floordiv.label = self.label
         return floordiv
 
-    def __rfloordiv__(self, other: Union[int, float, complex, Iterable]):
+    def __rfloordiv__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer l'expression other // self, où self est l'objet courant et other est le diviseur.
         Voir `__floordiv__`.
@@ -384,7 +385,7 @@ class _Variables:
         floordiv.label = self.label
         return floordiv
 
-    def __mod__(self, other: Union[int, float, complex, Iterable]):
+    def __mod__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer l'expression self % other, où self est l'objet courant et other est le modulo.
         Le modulo est le reste de la division entière. Par exemple, 5%2 donne 1, car 5//2 donne 2 et il reste 1. Dans le
@@ -398,7 +399,7 @@ class _Variables:
         mod.label = self.label
         return mod
 
-    def __rmod__(self, other: Union[int, float, complex, Iterable]):
+    def __rmod__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer l'expression other % self, où self est l'objet courant et other est un autre
         objet. Voir `__mod__`
@@ -411,7 +412,7 @@ class _Variables:
         mod.label = self.label
         return mod
 
-    def __abs__(self):
+    def __abs__(self) -> '_Variables':
         """
         Méthode permettant de calculer la valeur absolue, définie comme -nombre si nombre est négatif, sinon donne
         nombre. Dans le cas présent, comme il s'agit de plusieurs valeurs contenu dans un array, on effectue l'opération sur
@@ -422,7 +423,7 @@ class _Variables:
         absolu.label = self.label
         return absolu
 
-    def __ceil__(self):
+    def __ceil__(self) -> '_Variables':
         """
         Méthode permettant de calculer la fonction mathématique "ceil" (plafond) définie comme l'entier supérieur
         (ou égal) le plus proche d'un nombre quelconque. Par exemple, floor(1.01) donne 2, alors que floor(1) donne 1.
@@ -434,7 +435,7 @@ class _Variables:
         ceil.label = self.label
         return ceil
 
-    def __floor__(self):
+    def __floor__(self) -> '_Variables':
         """
         Méthode permettant de calculer la fonction mathématique "floor" (plancher) définie comme l'entier inférieur
         (ou égal) le plus proche d'un nombre quelconque. Par exemple, floor(1.9) donne 1, alors que floor(2) donne 2.
@@ -446,7 +447,7 @@ class _Variables:
         floor.label = self.label
         return floor
 
-    def __round__(self, n: int = None):
+    def __round__(self, n: int = None) -> '_Variables':
         """
         Méthode permettant d'arrondir l'objet courant selon un nombre de décimales. Permet la compatibilité avec la
         méthode builtin `round`.
@@ -514,7 +515,7 @@ class _Variables:
         lt = ~(self >= other)
         return lt
 
-    def __iadd__(self, other: Union[int, float, complex, Iterable]):
+    def __iadd__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer "sur place" (i.e. en modifiant l'objet courant) l'expression self + other, où
         self est l'objet courant et other est l'opérande. Permet de calculer self += other.
@@ -524,7 +525,7 @@ class _Variables:
         self._valeurs = (self + other)._valeurs
         return self
 
-    def __isub__(self, other: Union[int, float, complex, Iterable]):
+    def __isub__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer "sur place" (i.e. en modifiant l'objet courant) l'expression self - other, où
         self est l'objet courant et other est l'opérande. Permet de calculer self -= other.
@@ -534,7 +535,7 @@ class _Variables:
         self._valeurs = (self - other)._valeurs
         return self
 
-    def __itruediv__(self, other: Union[int, float, complex, Iterable]):
+    def __itruediv__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer "sur place" (i.e. en modifiant l'objet courant) l'expression self / other, où
         self est l'objet courant et other est le diviseur. Permet de calculer self /= other.
@@ -544,7 +545,7 @@ class _Variables:
         self._valeurs = (self / other)._valeurs
         return self
 
-    def __ifloordiv__(self, other: Union[int, float, complex, Iterable]):
+    def __ifloordiv__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer "sur place" (i.e. en modifiant l'objet courant) l'expression self // other, où
         self est l'objet courant et other est le diviseur. Permet de calculer self //= other.
@@ -554,7 +555,7 @@ class _Variables:
         self._valeurs = (self // other)._valeurs
         return self
 
-    def __imod__(self, other: Union[int, float, complex, Iterable]):
+    def __imod__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer "sur place" (i.e. en modifiant l'objet courant) l'expression self % other, où
         self est l'objet courant et other est le modulo (?). Permet de calculer self %= other.
@@ -564,7 +565,7 @@ class _Variables:
         self._valeurs = (self % other)._valeurs
         return self
 
-    def __imul__(self, other: Union[int, float, complex, Iterable]):
+    def __imul__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer "sur place" (i.e. en modifiant l'objet courant) l'expression self * other, où
         self est l'objet courant et other est le facteur. Permet de calculer self *= other.
@@ -574,7 +575,7 @@ class _Variables:
         self._valeurs = (self * other)._valeurs
         return self
 
-    def __ipow__(self, other: Union[int, float, complex, Iterable]):
+    def __ipow__(self, other: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de calculer "sur place" (i.e. en modifiant l'objet courant) l'expression self ** other, où
         self est l'objet courant et other est l'exposant. Permet de calculer self **= other.
@@ -640,7 +641,7 @@ class _Variables:
         Il existe un cas particulier: si positions est -1, ajoute à la fin de l'objet courant (append). Pour le reste,
         les valeurs sont ajoutées après positions si entier, sinon après chaque entrée si iterable. Si itérable, il
         doit avoir la même taille que les valeurs.
-        :return:not _bloquer_modifcation_taille, bool. On retourne le booléen associé à la modification de la taille. Si
+        :return:not _bloquer_modification_taille, bool. On retourne le booléen associé à la modification de la taille. Si
         celle-ci n'est pas permise, aucune modification n'est faite et on retourne False. Sinon, on modifie l'objet
         courant et on retourne True.
         """
@@ -648,7 +649,7 @@ class _Variables:
             ajout = valeurs.valeurs
         else:
             ajout = np.ravel(valeurs).copy()
-        if not self._bloquer_modifcation_taille:
+        if not self._bloquer_modification_taille:
             type_ajout = ajout.dtype.type
             self._type_cast_priorite(type_ajout)
             if isinstance(positions, Integral) and positions == -1:
@@ -656,7 +657,7 @@ class _Variables:
             else:
                 self._valeurs = np.insert(self._valeurs, positions, valeurs)
         self._len = len(self._valeurs)
-        return not self._bloquer_modifcation_taille
+        return not self._bloquer_modification_taille
 
     def enlever_variables(self, positions: Union[int, slice, Iterable] = None,
                           valeurs: Union[int, float, complex, Iterable] = None,
@@ -675,7 +676,7 @@ class _Variables:
         :return: positions: int, slice, Iterable ou None. Retourne la ou les positions où des éléments ont été retirés.
         Si on ne permet pas la modification de la taille, on retourne None.
         """
-        if not self._bloquer_modifcation_taille:
+        if not self._bloquer_modification_taille:
             if positions is not None and valeurs is not None:
                 msg = "Veuillez spécifier la position des éléments à retirer ou les valeurs à retirer, pas les deux."
                 raise ValueError(msg)
@@ -697,7 +698,7 @@ class _Variables:
         self._len = len(self._valeurs)
         return positions
 
-    def copie(self):
+    def copie(self) -> '_Variables':
         """
         Méthode permettant de faire une copie (profonde) de l'objet courant.
         :return: copie, une copie (profonde) de l'objet courant.
@@ -719,7 +720,7 @@ class _Variables:
         egalite = np.all(self == autre)
         return egalite
 
-    def concatener_a_courant(self, *variables: Union[int, float, complex, Iterable]):
+    def concatener_a_courant(self, *variables: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de concatener de nouveaux objets à celui courant. Version concaténant à l'objet courant de
         `concatener` (repose sur ce code).
@@ -756,7 +757,7 @@ class _Variables:
         return cast_dtype
 
     @classmethod
-    def concatener(cls, *variables: Union[int, float, complex, Iterable]):
+    def concatener(cls, *variables: Union[int, float, complex, Iterable]) -> '_Variables':
         """
         Méthode permettant de concatener plusieurs variables. Cette méthode est différente de `ajouter_variables`, car
         on ne modifie pas d'objet courant (méthode de classe).
@@ -773,7 +774,7 @@ class _Variables:
         return concat
 
     @classmethod
-    def __array_wrap__(cls, array):
+    def __array_wrap__(cls, array) -> '_Variables':
         """
         Méthode permettant de s'assurer que la classe _Variables (et ses dérivées) puisse être utilisée de manière
         cohérente avec NumPy.
@@ -811,6 +812,19 @@ class VariablesIndependantes(_Variables):
 
     def __init__(self, x: Iterable, label: str = None,
                  bloquer_ajout_modification_taille: bool = True):
+        """
+        Constructeur de la classe `VariablesIndependantes`. Permet de représenter des variables indépendantes, comme
+        en mathématiques.
+        :param x: itérable. Conteneur de variables indépendantes, peuvent être dans une liste, un tuple, un array ou
+        même un autre objet de type VariablesIndependantes. Le conteneur ne doit pas contenir de doublons.
+        :param label: str. Label associé à la variable indépendante courante. `None` par défaut, mais prendra par la
+        suite la valeur de `__label__` de la classe courante.
+        :param bloquer_ajout_modification_taille: bool. Booléen spécifiant si on veut bloquer la modification de la
+        taille de l'objet créé. Dans la très grande majorité des cas, ce booléen doit être `True` pour garder le concept
+        cohérent (en effet, avoir un couple VariablesDependantes et VariablesIndependantes de tailles différentes n'est
+        pas acceptable et cohérent). Par contre, on laisse la possibilité de le mettre à `False` (modification de la
+        taille permise) pour des cas possibles où ça devrait être permis.
+        """
         counts = np.unique(x, return_counts=True)[1]
         if any(counts != 1):
             raise ValueError("Les variables indépendantes doivent être uniques.")
@@ -822,11 +836,32 @@ class VariablesDependantes(_Variables):
 
     def __init__(self, y: Iterable, label: str = None,
                  bloquer_ajout_modification_taille: bool = True):
+        """
+        Constructeur de la classe `VariablesDependantes`. Permet de représenter des variables indépendantes, comme
+        en mathématiques.
+        :param x: itérable. Conteneur de variables indépendantes, peuvent être dans une liste, un tuple, un array ou
+        même un autre objet de type VariablesDependantes.
+        :param label: str. Label associé à la variable indépendante courante. `None` par défaut, mais prendra par la
+        suite la valeur de `__label__` de la classe courante.
+        :param bloquer_ajout_modification_taille: bool. Booléen spécifiant si on veut bloquer la modification de la
+        taille de l'objet créé. Dans la très grande majorité des cas, ce booléen doit être `True` pour garder le concept
+        cohérent (en effet, avoir un couple VariablesDependantes et VariablesIndependantes de tailles différentes n'est
+        pas acceptable et cohérent). Par contre, on laisse la possibilité de le mettre à `False` (modification de la
+        taille permise) pour des cas possibles où ça devrait être permis.
+        """
         super(VariablesDependantes, self).__init__(y, bloquer_ajout_modification_taille, label)
 
     @classmethod
     def from_variables_independantes(cls, x: Iterable,
-                                     fonction: Callable):
+                                     fonction: Callable) -> 'VariablesDependantes':
+        """
+        Genre de variante de constructeur. Permet de construire des `VariablesDependantes` à partir de variables
+        indépendantes.
+        :param x: iterable. Conteneur de variables indépendantes, peuvent être dans une liste, un tuple, un array
+        ou encore un object `VariablesDependantes`.
+        :param fonction: callable. Fonction qui lie les variables indépendantes aux variables dépendantes.
+        :return: variables, un objet `VariablesIndependantes`.
+        """
         variables = fonction(x)
         variables = cls(variables)
         return variables
@@ -834,7 +869,16 @@ class VariablesDependantes(_Variables):
 
 class Fonction:
 
+    # TODO: mettre Fonction a part, comme ça on peut avoir l'ordre des dépendances:
+    # Fonction dépend de _Liaison et de _Variables, ainsi que _Liaison dépend de _Variables. Cela serait mieux.
+
     def __init__(self, x: Iterable, y: Iterable):
+        """
+        Constructeur de la classe `Fonction`. Permet de créer une version "informatique" de ce qu'est une fonction
+        mathématique.
+        :param x: iterable. Observable indépendant, souvent appelé "variable x". Doit être de même taille que `y`.
+        :param y: iterable. Observable dépendant, souvent appelé "variable y". Doit être de même taille que `x`.
+        """
         if not isinstance(y, VariablesDependantes):
             y = VariablesDependantes(y)
         if not isinstance(x, VariablesIndependantes):
@@ -843,12 +887,17 @@ class Fonction:
             raise ValueError("Les variables dépendantes et indépendantes doivent avoir la même taille.")
         self._x = x
         self._y = y
-        self._x._bloquer_modifcation_taille = True
-        self._y._bloquer_modifcation_taille = True
+        self._x._bloquer_modification_taille = True
+        self._y._bloquer_modification_taille = True
         self._liaison = None
 
     @property
-    def info(self):
+    def info(self) -> dict:
+        """
+        Propriété de l'objet courant. Permet d'obtenir les informations de l'objet `Fonction` courant.
+        :return: info, un dictionnaire contenant l'observable `x`, l'observable `y` et l'information importante de la
+        liaison (si elle existe).
+        """
         liaison_info = None
         if self._liaison is not None:
             liaison_info = self._liaison.info
@@ -857,20 +906,44 @@ class Fonction:
 
     @property
     def liaison(self) -> _Liaison:
+        """
+        Propriété de l'objet courant. Permet d'obtenir la liaison courante (`None` si elle n'existe pas).
+        :return: la liaison courante.
+        """
         return self._liaison
 
     @property
     def x(self) -> VariablesIndependantes:
+        """
+        Propriété de l'objet courant. Permet d'obtenir une *copie* de la variable indépendante `x`.
+        :return: Une copie de l'attribut `x` (la variable indépendante).
+        """
         return self._x.copie()
 
     @property
     def y(self) -> VariablesDependantes:
+        """
+        Propriété de l'objet courant. Permet d'obtenir une *copie* de la variable dépendante `y`.
+        :return: Une copie de l'attribut `y` (la variable dépendante).
+        """
         return self._y.copie()
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """
+        Méthode permettant de faire `len(self)` ou `self` est l'objet courant. Retourne le nombre d'éléments dans la
+        variable indépendante (égal au nombre d'éléments dans la variable dépendante).
+        :return: le nombre d'éléments dans la variable dépendante.
+        """
         return len(self._x)
 
-    def __call__(self, x: Union[int, float, complex, Iterable]):
+    def __call__(self, x: Union[int, float, complex, Iterable]) -> VariablesDependantes:
+        """
+        Méthode permettant d'appeler l'objet courant (i.e. faire `self(...)` où `self` est l'objet courant). Lance une
+        exception si la liaison entre les variables indépendantes et dépendantes n'existe pas.
+        :param x: nombre ou itérable. Valeur(s) à donner à la liaison (si elle existe).
+        :return: un objet `VariablesDependantes` correspondant à l'application de la liaison courante (si elle existe)
+        sur le paramètre donné `x`.
+        """
         if self._liaison is None:
             raise ValueError("Veuillez spécifier une manière de 'lier' les valeurs.")
         valeurs = self._liaison(x)
@@ -878,6 +951,11 @@ class Fonction:
 
     def __getitem__(self, item: Union[int, slice]) -> Tuple[
         Union[int, float, complex, Iterable], Union[int, float, complex, Iterable]]:
+        """
+        Méthode permettant d'accéder à certains éléments des variables indépendantes et dépendantes.
+        :param item: entier ou slice. Clé(s) de l'/des élément(s) auquel/auxquels on veut accéder.
+        :return: le tuple (valeur(s) x, valeur(s) y).
+        """
         y = self._y[item]
         x = self._x[item]
         return x, y
@@ -885,23 +963,54 @@ class Fonction:
     def __setitem__(self, key: Union[int, slice, Iterable],
                     values: Tuple[Union[int, float, complex, Iterable, None], Union[
                         int, float, complex, Iterable, None]]) -> None:
+        """
+        Méthode permettant d'accéder et modifier certains éléments des variables indépendantes et dépendantes. Rend la
+        liaison courante invalide.
+        :param key: entier, slice ou itérable. Clé(s) de l'/des élément(s) auquel/auxquels on veut accéder et modifier.
+        :param values: tuple de nombres ou d'itérables. Nouvelle(s) valeur(s) dont on veut modifier l'/les ancienne(s).
+        L'élément 0 du tuple correspond à la/aux nouvelle(s) valeur(s) pour la variable indépendante `x`, alors que
+        l'élément 1 du tuple correspond à la/aux nouvelle(s) valeur(s) pour la variable dépendante `y`. Dans les deux
+        cas, `None` signifie ne pas changer les valeurs courantes (par exemple, si on veut seulement changer en `y`).
+        :return: Rien.
+        """
         nouvelles_x = values[0]
         nouvelle_y = values[1]
         if nouvelle_y is not None:
             self._y[key] = nouvelle_y
         if nouvelles_x is not None:
             self._x[key] = nouvelles_x
+        if self._liaison is not None:
+            warnings.warn("Liaison maintenant invalide.")
+            self._liaison = None
 
     def changer_variables(self, key: Union[int, slice, Iterable],
                           values: Tuple[Union[int, float, complex, Iterable], Union[
                               int, float, complex, Iterable]] = (None, None)) -> None:
+        """
+        Méthode similaire à `__setitem__`. En fait, c'est une encapsulation.
+        :param key: entier, slice ou itérable. Clé(s) de l'/des élément(s) auquel/auxquels on veut accéder et modifier.
+        :param values: tuple de nombres ou d'itérables. Nouvelle(s) valeur(s) dont on veut modifier l'/les ancienne(s).
+        L'élément 0 du tuple correspond à la/aux nouvelle(s) valeur(s) pour la variable indépendante `x`, alors que
+        l'élément 1 du tuple correspond à la/aux nouvelle(s) valeur(s) pour la variable dépendante `y`. Dans les deux
+        cas, `None` signifie ne pas changer les valeurs courantes (par exemple, si on veut seulement changer en `y`).
+        :return: Rien.
+        """
         self[key] = values
 
-    def ajouter_variables(self, valeurs: Tuple[Union[int, float, complex, Sequence], Union[
-        int, float, complex, Sequence]], positions: Union[int, slice, Iterable] = -1):
-        # TODO: Permettre de refaire _Liaison OU mettre warning
-        self._x._bloquer_modifcation_taille = False
-        self._y._bloquer_modifcation_taille = False
+    def ajouter_variables(self,
+                          valeurs: Tuple[Union[int, float, complex, Sequence], Union[int, float, complex, Sequence]],
+                          positions: Union[int, slice, Iterable] = -1) -> bool:
+        """
+        Méthode permettant d'ajouter des variables indépendantes et dépendantes. Rend la liaison courant invalide.
+        :param valeurs: tuple de nombres ou séquences. Valeur(s) à ajouter. L'élément 0 du tuple représente la/les
+        valeurs à ajouter à la variable indépendante. Le second élément représente la/les valeurs à ajouter à la
+        variable dépendante.
+        :param positions: entier, slice ou itérable. Position(s) où ajouter la/les valeur(s). -1 par défaut, ce qui
+        signifie à la fin.
+        :return: ret, bool. Booléen qui dit si l'ajout a été fait.
+        """
+        self._x._bloquer_modification_taille = False
+        self._y._bloquer_modification_taille = False
         ajout_x = valeurs[0]
         ajout_y = valeurs[1]
         if isinstance(ajout_x, Number):
@@ -917,24 +1026,61 @@ class Fonction:
         ret = self._x.ajouter_variables(ajout_x, positions)
         if ret:  # Au cas où quelque chose arrive et qu'on ne puisse pas ajouter de variables.
             ret &= self._y.ajouter_variables(ajout_y, positions)
-        self._x._bloquer_modifcation_taille = True
-        self._y._bloquer_modifcation_taille = True
+        self._x._bloquer_modification_taille = True
+        self._y._bloquer_modification_taille = True
+        if self._liaison is not None and ret:
+            warnings.warn("Liaison maintenant invalide.")
+            self._liaison = None
         return ret
 
     def enlever_variables(self, positions: Union[int, slice, Iterable] = None,
-                          valeurs_x: Union[int, float, complex, Iterable] = None):
-        self._x._bloquer_modifcation_taille = False
-        self._y._bloquer_modifcation_taille = False
+                          valeurs_x: Union[int, float, complex, Iterable] = None) -> Union[int, slice, Iterable, None]:
+        """
+        Méthode permettant d'enlever des valeurs aux variables indépendantes et dépendantes. Rend la liaison invalide.
+        :param positions: int, slice ou Iterable. Index où enlever les valeurs. `None` par défaut, signifie
+        qu'on ne retire pas par l'index.
+        :param valeurs_x: nombre ou itérable. Valeurs en `x` à retirer (les valeurs `y` correspondantes sont aussi
+        enlevées). `None` par défaut, signifie qu'on ne retire pas par l'index.
+        :return: pos, int, slice, Iterable ou None. Positions où les variables ont été enlevées. `None` si aucun
+        retrait.
+        """
+        self._x._bloquer_modification_taille = False
+        self._y._bloquer_modification_taille = False
         pos = self._x.enlever_variables(positions, valeurs_x)
         if pos is not None:
             self._y.enlever_variables(pos)
-        self._x._bloquer_modifcation_taille = True
-        self._y._bloquer_modifcation_taille = True
+        self._x._bloquer_modification_taille = True
+        self._y._bloquer_modification_taille = True
+        if self._liaison is not None and pos is not None:
+            warnings.warn("Liaison maintenant invalide.")
+            self._liaison = None
         return pos
 
     def ajouter_liaison(self, type_liaison: Type[_Liaison], borne_inf: float = None, borne_sup: float = None,
                         label: str = None, discontinuites_permises: bool = False, epsilon_continuite: float = None,
-                        executer: bool = True, *execution_args, **execution_kwargs):
+                        executer: bool = True, *execution_args, **execution_kwargs) -> None:
+        """
+        Méthode permettant d'ajouter une objet `_Liaison` pour "lier" les variables indépendantes aux variables
+        dépendantes.
+        :param type_liaison: type de `_Liaison` (peut être classe fille). Cet argument ne peut pas être une liaison
+        mixte.
+        :param borne_inf: float. Borne inférieure de la liaison à ajouter. `None` par défaut, ce qui signifie aucune
+        borne (techniquement -infini).
+        :param borne_sup:  float. Borne supérieure de la liaison à ajouter. `None` par défaut, ce qui signifie aucune
+        borne (techniquement infini).
+        :param label: str. Nom / label de la liaison. `None` par défaut, prend le nom par défaut du constructeur.
+        :param discontinuites_permises: bool. Booléen spécifiant si on accepte les discontinuités dans la liaison à
+        créer. `False` par défaut.
+        :param epsilon_continuite: float. Dans le cas où les discontinuités ne sont pas permises, on utilise cette
+        valeur comme écart absolu maximal qu'on considère pour la continuité. `None` par défaut (on ne considère aucun
+        écart possible).
+        :param executer: bool. Booléen spécifiant si on doit exécuter la liaison après sa création. Une exécution
+        signifie qu'on fait, par exemple, la régression dans le cas de la régression. `True` par défaut.
+        :param execution_args: arguments pour l'exécution (voir les méthodes propres aux liaisons pour plus de détails).
+        :param execution_kwargs: mots-clés d'arguments pour l'exécution (voir les méthodes propres aux liaisons pour
+        plus de détails).
+        :return: Rien.
+        """
         if type_liaison == LiaisonMixte:
             msg = "Spécifier une liaison mixte est ambiguë. Veuillez spécifier chaque liaison interne une à la " \
                   "fois ou utiliser `ajouter_liaisons` avec toutes ses liaisons internes."
@@ -958,18 +1104,41 @@ class Fonction:
             self._liaison = self._liaison.concatener_a_courant(discontinuites_permises, epsilon_continuite, None,
                                                                liaison_courante)
 
-    def ajouter_liaisons(self, type_liaisons: Sequence[Type[_Liaison]], bornes_inf: Sequence[float],
+    def ajouter_liaisons(self, types_liaisons: Sequence[Type[_Liaison]], bornes_inf: Sequence[float],
                          bornes_sup: Sequence[float], labels: Sequence[str] = None,
                          discontinuites_permises: bool = False, epsilon_continuite: float = None,
-                         executer: bool = True, execution_kwargs: dict = None):
-        if len(type_liaisons) != len(bornes_inf) or len(type_liaisons) != len(bornes_sup):
+                         executer: bool = True, execution_kwargs: dict = None) -> None:
+        """
+        Méthode permettant d'ajouter plusieurs liaisons à l'objet courant.
+        :param types_liaisons: séquence. Types de liaisons. Un type ne peut être `_LiaisonMixte`.
+        :param bornes_inf: séquence de floats. Séquence de bornes inférieures pour les liaisons. Dans le cas où un
+        élément est `None`, on ne met pas de borne inférieure. La séquence doit être de même longueur que le nombre de
+        liaisons.
+        :param bornes_sup: séquence de floats. Séquence de bornes supérieures pour les liaisons. Dans le cas où un
+        élément est `None`, on ne met pas de borne supérieure. La séquence doit être de même longueur que le nombre de
+        liaisons.
+        :param labels: séquence de strings. Noms/labels des liaisons. `None` par défaut (prend le nom par défaut
+        du constructeur).
+        :param discontinuites_permises: bool. Booléen spécifiant si on permet les discontinuités entre les liaisons.
+        `False` par défaut.
+        :param epsilon_continuite: float. Dans le cas où les discontinuités ne sont pas permises, on utilise cette
+        valeur comme écart absolu maximal qu'on considère pour la continuité. `None` par défaut (on ne considère aucun
+        écart possible).
+        :param executer: bool. Booléen spécifiant si on doit exécuter la liaison après sa création. Une exécution
+        signifie qu'on fait, par exemple, la régression dans le cas de la régression. `True` par défaut.
+        :param execution_kwargs: dict. Dictionnaires dont les clés sont les arguments pour l'exécution et les valeurs
+        sont les valeurs des arguments. `None` par défaut, donc on prend les arguments par défaut de l'exécution. Voir
+        les méthodes spécifiques de l'exécution des liaisons pour plus de détails sur les mots-clés.
+        :return: Rien.
+        """
+        if len(types_liaisons) != len(bornes_inf) or len(types_liaisons) != len(bornes_sup):
             raise ValueError("Il doit y avoir autant de liaisons que de bornes inférieures et supérieures")
         if labels is None:
-            labels = [None] * len(type_liaisons)
+            labels = [None] * len(types_liaisons)
         # Si on n'a pas fini de créer la LiaisonMixte finale, on ne se soucie pas des discontinuités possibles.
         discontinuites_permises_temp = True
-        for i, type_liaison in enumerate(type_liaisons):
-            if i == len(type_liaisons) - 1:
+        for i, type_liaison in enumerate(types_liaisons):
+            if i == len(types_liaisons) - 1:
                 discontinuites_permises_temp = discontinuites_permises
             self.ajouter_liaison(type_liaison, bornes_inf[i], bornes_sup[i], labels[i], discontinuites_permises_temp,
                                  epsilon_continuite, False)
