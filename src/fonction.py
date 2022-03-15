@@ -10,7 +10,6 @@ class _Variables:
 
     def __init__(self, valeurs: Iterable, bloquer_ajout_modification_taille: bool = True,
                  label: str = None):
-        # TODO: Constructeur copie avec __new__ ?
         """
         Constructeur de la classe _Variables.
         :param valeurs: Iterable. Conteneur initial des valeurs de la variable à créer.
@@ -43,7 +42,7 @@ class _Variables:
     @property
     def cls(self) -> type:
         """
-        Propriété non modificable correspondant à la classe de l'objet courant. Peut être _Variables, mais aussi une de
+        Propriété non modifiable correspondant à la classe de l'objet courant. Peut être _Variables, mais aussi une de
         ses classes dérivées.
         :return: cls, type. Classe de l'objet courant.
         """
@@ -90,7 +89,7 @@ class _Variables:
         :param valeur: int, float, complex, Iterable. Nouvelle(s) valeur(s) qu'on veut assigner. Si cet argument ainsi
         que la clé sont scalaires, l'élément à la position `cle` sera changé à cette valeur. Si la clé n'est pas
         scalaire (slice ou itérable), tous les éléments accédés par la clé seront changés à cette valeur. Finalement, si
-        cet argument est itérable, la clé doit être soit une slice ou aussi itérable, ils doivent avoir la même taille.
+        cet argument est itérable, la clé doit être soit un slice ou aussi itérable, ils doivent avoir la même taille.
         :return: None. Rien n'est retourné.
         """
         valeur = np.ravel(valeur).copy()
@@ -139,8 +138,8 @@ class _Variables:
     def __deepcopy__(self, *args, **kwargs):
         """
         Méthode permettant de faire la copie en profondeur à l'aide du module `copie` et de sa fonction `deepcopy`.
-        :param args: Arguments inutilisés, mais servant à la compatibilités
-        :param kwargs: Arguments inutilisés, mais servant à la compatibilités
+        :param args: Arguments inutilisés, mais servant à la compatibilité
+        :param kwargs: Arguments inutilisés, mais servant à la compatibilité
         :return: copie, nouvel objet copié sur celui courant (voir la méthode `copie`)
         """
         copie = self.copie()
@@ -152,8 +151,8 @@ class _Variables:
         valeurs entrant en jeu, il est (plus souvent qu'autrement) ambiguë d'avoir une valeur booléenne unique. Dans ces
         cas communs, un array de booléens sera retourné. Cet array est la comparaison terme à terme entre l'objet
         courant et l'autre objet.
-        :param other: object. Objet quelconque dont on veut évaluer la non égalité avec l'objet courant. Il existe
-        quelques cas:
+        :param other: object. Objet quelconque dont on veut évaluer la non-égalité avec l'objet courant. Il existe
+        quelques cas :
 
         - S'il s'agit d'un scalaire, on compare ce scalaire à chaque terme de l'objet courant. Cela donne un array
         dont l'entrée à l'index `i` indique si le scalaire est égal à l'entrée à l'index `i` de l'objet courant.
@@ -214,7 +213,7 @@ class _Variables:
 
     def __add__(self, other: Union[int, float, complex, Iterable]):
         """
-        Méthode permettant d'additionner un objet quelconque à celui courant, donc self + other. Cette addtion est
+        Méthode permettant d'additionner un objet quelconque à celui courant, donc self + other. Cette addition est
         équivalente à other + self (`__radd__`).
         :param other: int, float, complex, Iterable. Objet autre qu'on veut additionner à celui courant. Si c'est un
         scalaire, on additionne tous les termes de l'objet courant à ce scalaire. Si c'est un itérable, on additionne
@@ -251,7 +250,7 @@ class _Variables:
 
     def __rsub__(self, other: Union[int, float, complex, Iterable]):
         """
-        Méthode permettant de caluler la soustraction other - self, où self est l'objet courant et où other est un autre
+        Méthode permettant de calculer la soustraction other - self, où self est l'objet courant et où other est un autre
         objet quelconque.
         :param other: int, float, complex, Iterable. Objet auquel on soustrait l'objet courant. Dans le cas où c'est un
         scalaire, on soustrait à ce dernier chaque élément de l'objet courant un après l'autre (séparément). Dans le cas
@@ -266,7 +265,7 @@ class _Variables:
 
     def __mul__(self, other: Union[int, float, complex, Iterable]):
         """
-        Méthode permettant de multipliser un objet quelconque par celui courant, donc self * other. La multiplication
+        Méthode permettant de multiplier un objet quelconque par celui courant, donc self * other. La multiplication
         étant "terme à terme", elle est donc équivalente à other * self (`__rmul__`).
         :param other: int, float, complex ou Iterable. Objet quelconque qu'on multiplie à celui courant. S'il s'agit
         d'un scalaire, on multiplie chaque terme de l'objet courant par ce scalaire. S'il s'agit d'un itérable, on
@@ -322,7 +321,7 @@ class _Variables:
         :param power: int, float, complex, Iterable. Objet servant d'exposant (ou puissance) qu'on applique sur l'objet
         courant. Dans le cas où c'est un scalaire, on l'applique sur tous les éléments courants. Dans le cas où c'est
         un itérable, on l'applique élément par élément sur l'objet courant, ils doivent donc être de même taille.
-        :return: pow, nouvel objet composé des valeurs de l'objet courant dont on a élevé à la puissance power.
+        :return: pow_, nouvel objet composé des valeurs de l'objet courant dont on a élevé à la puissance power.
         """
         power = np.ravel(power)
         t_pow = power.dtype.type
@@ -465,7 +464,7 @@ class _Variables:
         Méthode permettant de comparer l'objet courant à un autre selon la logique "plus grand que", soit
         self > other.
         :param other:int, float, complex, Iterable. Autre objet à comparer. Si scalaire, on compare toutes les entrées
-        courante à ce scalaire. Si itérable, doit être de même dimension que l'objet courant. Dans ce cas, on effectue
+        courantes à ce scalaire. Si itérable, doit être de même dimension que l'objet courant. Dans ce cas, on effectue
         la comparaison terme à terme.
         :return:gt, array de booléens. Comparaison de l'objet courant avec l'autre objet selon la logique
         "plus grand que".
@@ -478,9 +477,9 @@ class _Variables:
     def __le__(self, other: Union[int, float, complex, Iterable]) -> Iterable[bool]:
         """
         Méthode permettant de comparer l'objet courant à un autre selon la logique "plus petit ou égal à", soit
-        self <=other.
+        self <= other.
         :param other:int, float, complex, Iterable. Autre objet à comparer. Si scalaire, on compare toutes les entrées
-        courante à ce scalaire. Si itérable, doit être de même dimension que l'objet courant. Dans ce cas, on effectue
+        courantes à ce scalaire. Si itérable, doit être de même dimension que l'objet courant. Dans ce cas, on effectue
         la comparaison terme à terme.
         :return:le, array de booléens. Comparaison de l'objet courant avec l'autre objet selon la logique
         "plus petit ou égal à".
@@ -491,9 +490,9 @@ class _Variables:
     def __ge__(self, other: Union[int, float, complex, Iterable]) -> Iterable[bool]:
         """
         Méthode permettant de comparer l'objet courant à un autre selon la logique "plus grand ou égal à", soit
-        self >=other.
+        self >= other.
         :param other:int, float, complex, Iterable. Autre objet à comparer. Si scalaire, on compare toutes les entrées
-        courante à ce scalaire. Si itérable, doit être de même dimension que l'objet courant. Dans ce cas, on effectue
+        courantes à ce scalaire. Si itérable, doit être de même dimension que l'objet courant. Dans ce cas, on effectue
         la comparaison terme à terme.
         :return:ge, array de booléens. Comparaison de l'objet courant avec l'autre objet selon la logique
         "plus grand ou égal à".
@@ -507,7 +506,7 @@ class _Variables:
         """
         Méthode permettant de comparer l'objet courant à un autre selon la logique "plus petit que", soit self < other.
         :param other:int, float, complex, Iterable. Autre objet à comparer. Si scalaire, on compare toutes les entrées
-        courante à ce scalaire. Si itérable, doit être de même dimension que l'objet courant. Dans ce cas, on effectue
+        courantes à ce scalaire. Si itérable, doit être de même dimension que l'objet courant. Dans ce cas, on effectue
         la comparaison terme à terme.
         :return:lt, array de booléens. Comparaison de l'objet courant avec l'autre objet selon la logique
         "plus petit que".
@@ -639,7 +638,7 @@ class _Variables:
         est très important, car les valeurs sont ajoutées dans l'ordre qu'elles sont données.
         :param positions: int, slice, Iterable. Position(s) où ajouter les nouvelles valeurs (ajouter après).
         Il existe un cas particulier: si positions est -1, ajoute à la fin de l'objet courant (append). Pour le reste,
-        les valeurs sont ajoutées après positions si entier, sinon après chaque entrées si iterable. Si itérable, il
+        les valeurs sont ajoutées après positions si entier, sinon après chaque entrée si iterable. Si itérable, il
         doit avoir la même taille que les valeurs.
         :return:not _bloquer_modifcation_taille, bool. On retourne le booléen associé à la modification de la taille. Si
         celle-ci n'est pas permise, aucune modification n'est faite et on retourne False. Sinon, on modifie l'objet
@@ -661,18 +660,18 @@ class _Variables:
 
     def enlever_variables(self, positions: Union[int, slice, Iterable] = None,
                           valeurs: Union[int, float, complex, Iterable] = None,
-                          enlever_toutes_occurences: bool = False) -> Union[int, slice, Iterable, None]:
+                          enlever_toutes_occurrences: bool = False) -> Union[int, slice, Iterable, None]:
         """
         Méthode permettant d'enlever des valeurs de l'objet courant, si la modification de la taille est permise.
         :param positions: int, slice, Iterable ou None (défaut). Si spécifié (donc différent de None), on retire les
-        éléments associées aux positions (si entier, on ne retire qu'un seul élément, si iterable ou slice, on retire
+        éléments associés aux positions (si entier, on ne retire qu'un seul élément, si iterable ou slice, on retire
         tous ceux associés). Ne peut être spécifié en même temps que valeurs et doit être spécifié si valeurs est None.
         :param valeurs: int, float, complex, Iterable ou None (défaut). Si spécifié (donc différent de None), on retire
         les éléments de même valeur dans l'objet courant. Ne peut être spécifié en même temps que positions et
         doit être spécifié si positions est None.
-        :param enlever_toutes_occurences: bool. Important seulement lorsque valeurs est spécifié. Sert à indiquer si on
-        veut enlever toutes les valeurs correspondantes ou seulement la première occurence. Si True, seulement la
-        première est enlever. Si False, toutes les occurences sont enlevées
+        :param enlever_toutes_occurrences: bool. Important seulement lorsque valeurs est spécifié. Sert à indiquer si on
+        veut enlever toutes les valeurs correspondantes ou seulement la première occurrence. Si True, seulement la
+        première est enlevée. Si False, toutes les occurrences sont enlevées
         :return: positions: int, slice, Iterable ou None. Retourne la ou les positions où des éléments ont été retirés.
         Si on ne permet pas la modification de la taille, on retourne None.
         """
@@ -685,11 +684,11 @@ class _Variables:
             if positions is None:
                 if isinstance(valeurs, _Variables):
                     valeurs = valeurs.valeurs
-                if enlever_toutes_occurences:
+                if enlever_toutes_occurrences:
                     positions = np.where(np.isin(self._valeurs, valeurs))[0]
                 else:
-                    positions = self._trouver_indices_premiere_occurence(self._valeurs, valeurs)
-            elif isinstance(positions, Number):
+                    positions = self._trouver_indices_premiere_occurrence(self._valeurs, valeurs)
+            elif isinstance(positions, int):
                 positions = np.ravel(positions)
             self._valeurs = np.delete(self._valeurs, positions)
 
@@ -724,7 +723,7 @@ class _Variables:
         """
         Méthode permettant de concatener de nouveaux objets à celui courant. Version concaténant à l'objet courant de
         `concatener` (repose sur ce code).
-        :param variables: Iterable(s). Variables à concatener à l'objet courant. Il peut y en a voir un nombre
+        :param variables: Iterable(s). Variables à concatener à l'objet courant. Il peut y en avoir un nombre
         arbitraire.
         :return: concat, nouvel objet composé des variables concatener à l'objet courant.
         """
@@ -759,9 +758,9 @@ class _Variables:
     @classmethod
     def concatener(cls, *variables: Union[int, float, complex, Iterable]):
         """
-        Méthode permettant de concatener  plusieurs variables. Cette méthode est différente de `ajouter_variables`, car
+        Méthode permettant de concatener plusieurs variables. Cette méthode est différente de `ajouter_variables`, car
         on ne modifie pas d'objet courant (méthode de classe).
-        :param variables: Iterable(s). Variables à concatener. Il peut y en a voir un nombre arbitraire.
+        :param variables: Iterable(s). Variables à concatener. Il peut y en avoir un nombre arbitraire.
         :return: concat, nouvel objet composé de la concaténation de nouvelles variables une à la suite de l'autre.
         """
         # DIFFÉRENT DE ajouter_variables: crée un nouvel objet, ne modifie pas un objet spécifique
@@ -786,13 +785,13 @@ class _Variables:
         return objet_variables
 
     @staticmethod
-    def _trouver_indices_premiere_occurence(array: Iterable, valeurs: Union[int, float, complex, Iterable]) -> list:
+    def _trouver_indices_premiere_occurrence(array: Iterable, valeurs: Union[int, float, complex, Iterable]) -> list:
         """
-        Méthode utilitaire permettant de trouver l'indice de première occurence de valeurs quelconque dans un array
+        Méthode utilitaire permettant de trouver l'indice de première occurrence de valeurs quelconque dans un array
         quelconque.
         :param array: Iterable. Conteneur dans lequel on veut trouver les éléments.
-        :param valeurs: int, float, complex, Iterable. Valeur(s) qu'on désire obtenir l'index de première occurence.
-        :return: indices, list. Liste d'indices de première occurence.
+        :param valeurs: int, float, complex, Iterable. Valeur(s) qu'on désire obtenir l'index de première occurrence.
+        :return: indices, list. Liste d'indices de première occurrence.
         """
         # Pas trouvé autre moyen de le faire plus efficacement
         indices = []
@@ -967,7 +966,7 @@ class Fonction:
             raise ValueError("Il doit y avoir autant de liaisons que de bornes inférieures et supérieures")
         if labels is None:
             labels = [None] * len(type_liaisons)
-        # Si on n'a pas fini de créer la LiaisonMixte finale, on ne se soucie pas des dicontinuités possibles.
+        # Si on n'a pas fini de créer la LiaisonMixte finale, on ne se soucie pas des discontinuités possibles.
         discontinuites_permises_temp = True
         for i, type_liaison in enumerate(type_liaisons):
             if i == len(type_liaisons) - 1:
