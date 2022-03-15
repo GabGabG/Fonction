@@ -1410,7 +1410,7 @@ class TestsFonction(CustomTestsUnitaires):
         f = Fonction(x, y)
         f.ajouter_liaison(RegressionPolynomiale, None, None, "Reg", False, None, True, 2)
         y_eval = f(x)
-        self.assertArrayAllClose(y_eval, y, 14)
+        self.assertArrayAllClose(y_eval, y, 13)
 
     def test_call_multiple_laisons_pretes(self):
         RegressionPolynomiale.__warning_covariance_matrice__ = True
