@@ -1,5 +1,5 @@
 from typing import Union, Callable, Tuple, Iterable, Sized, Type, Sequence
-from CodeUtilitaireSupplementaire.regression_interpolation import _Liaison, LiaisonMixte
+from src.regression_interpolation import _Liaison, LiaisonMixte
 from numbers import Integral
 import numpy as np
 from numbers import Number
