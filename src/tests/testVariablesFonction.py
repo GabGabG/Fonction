@@ -882,19 +882,19 @@ class TestsVariablesBase(CustomTestsUnitaires):
     def test_trouver_indice_premiere_occurence_objet_pas_present(self):
         var = np.arange(10)
         variables = _Variables(var)
-        where = variables._trouver_indices_premiere_occurence(variables, 10)
+        where = variables._trouver_indices_premiere_occurrence(variables, 10)
         self.assertListEqual(where, [])
 
     def test_trouver_indice_premiere_occurence_plusieurs_memes_valeurs(self):
         var = [1, 2, 3, 1, 1, 2, 3]
         variables = _Variables(var)
-        where = variables._trouver_indices_premiere_occurence(variables, 1)
+        where = variables._trouver_indices_premiere_occurrence(variables, 1)
         self.assertListEqual(where, [0])
 
     def test_trouver_indice_premiere_occurence_plusieurs_valeurs(self):
         var = [1, 2, 3, 1, 1, 2, 3]
         variables = _Variables(var)
-        where = variables._trouver_indices_premiere_occurence(variables, (1, 2, 3))
+        where = variables._trouver_indices_premiere_occurrence(variables, (1, 2, 3))
         self.assertListEqual(where, [0, 1, 2])
 
     def test_enlever_variables_modification_taille_pas_permise(self):
