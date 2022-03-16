@@ -1,5 +1,5 @@
 import warnings
-from typing import Union, Tuple, Iterable, Type, Sequence
+from typing import Union, Tuple, Iterable, Type, Sequence, List
 from src.regression_interpolation import _Liaison, LiaisonMixte
 from src.courbe import Courbe
 from src.style import Style
@@ -7,11 +7,10 @@ from src.variables import VariablesDependantes, VariablesIndependantes
 import numpy as np
 from matplotlib.pyplot import Axes
 from numbers import Number
+import pandas as pd
 
 
 class Fonction:
-
-    # TODO: mettre un from_csv_file
 
     def __init__(self, x: Iterable, y: Iterable, label: str = "Fonction"):
         """
@@ -291,3 +290,17 @@ class Fonction:
     def afficher_fonction(self, style: Style = Style(), ax: Axes = None):
         c = Courbe(self._x, self._y, label=self.label)
         c.afficher_courbe(False, False, False, style, self._x.label, self._y.label, ax)
+
+    @classmethod
+    def from_csv_file(cls, nom_fichier: str, separateur: str = ",", en_tete_noms_colonnes: Union[int, List[int]] = 0,
+                      colonne_var_indep: Union[str, int] = 0, colonne_var_dep: Union[str, int] = 1):
+        data = pd.read_csv(nom_fichier, sep=separateur, header=en_tete_noms_colonnes)
+        if isinstance(colonne_var_indep, int):
+            x = data.iloc[:, colonne_var_indep]
+        else:
+            x = data.loc[:, colonne_var_indep]
+        if isinstance(colonne_var_dep, int):
+            y = data.iloc[:, colonne_var_dep]
+        else:
+            y = data.loc[:, colonne_var_dep]
+        return cls(x, y)
