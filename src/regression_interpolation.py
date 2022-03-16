@@ -14,14 +14,14 @@ class _Liaison:
 
     def __init__(self, x_obs: Iterable, y_obs: Iterable, label: str):
         """
-        Constructeur de la classe de base _Liaison. Sert à représenter une "liaison" mathématique entre des variables
+        Constructeur de la classe de base `_Liaison`. Sert à représenter une "liaison" mathématique entre des variables
         indépendantes et des variables dépendantes. On peut penser à lier les variables à l'aide d'une régression
         polynomiale ou une interpolation quadratique, mais aussi à l'aide d'une fonction si on la connaît déjà.
         :param x_obs: Iterable. Variables indépendantes observées, c'est-à-dire celles qu'on utilise si on a à effectuer
         une régression ou interpolation.
         :param y_obs: Iterable. Variables dépendantes observées, c'est-à-dire celles qu'on utilise si on a à effectuer
         une régression ou interpolation. Doit être de même taille que x_obs.
-        :param label: str. Nom donné à la _Liaison.
+        :param label: str. Nom donné à la liaison.
         """
         self._x_obs = np.ravel(x_obs).copy()
         self._y_obs = np.ravel(y_obs).copy()
@@ -201,8 +201,8 @@ class _Liaison:
         positions_valides = (eval_x <= max_x_obs) & (eval_x >= min_x_obs)
         x_valides = np.sum(positions_valides)
         invalides = eval_x.shape != x_valides
-        msg = "Extrapolation permise, donc les points en-dehors de l'intervall `x_obs` seront extrapolés. " \
-              "Veuillez considérer que les valeurs peuvent être loins de la vérité."
+        msg = "Extrapolation permise, donc les points en-dehors de l'intervalle `x_obs` seront extrapolés. " \
+              "Veuillez considérer que les valeurs peuvent être loin de la vérité."
         if not self._extrapolation_permise:
             msg = "Extrapolation non permise, " \
                   "donc les points en-dehors de l'intervalle `x_obs` ne sont pas pris en compte."
@@ -325,7 +325,7 @@ class LiaisonMixte(_Liaison):
         """
         Méthode permettant d'indexer l'objet courant.
         :param item: objet servant d'index.
-        :return: valeur, tuple contenant (en ordre): la/les liaisons indexée(s), la/les bornes associée(s), tuple des
+        :return: valeur, tuple contenant (en ordre) : la/les liaisons indexée(s), la/les bornes associée(s), tuple des
         observables x et y associées.
         """
         tuple_obs = (self._x_obs_all[item], self._y_obs_all[item])
@@ -407,7 +407,7 @@ class LiaisonMixte(_Liaison):
     def executer(self, liaison_execution_args: dict = None):
         # liaison_execution_args, dictionnaire d'arguments pouvant avoir deux formes:
         # Forme 1: {0:(argument 0, argument 1, ...), 2:(argument 0, argument 1,...)}
-        # où clé est index liaison. Si pas besoin d'agument, pas inclure, comme ^, 1 n'est pas présent
+        # où clé est index liaison. Si pas besoin d'argument, pas inclure, comme ^, 1 n'est pas présent
         # Forme 2: {0:{"nom_argument_0":argument 0, ...}, 2:{"nom_argument_1": argument 1, ...}}
         # version "kwargs", où encore une fois clé = index liaison. Si pas d'argument, ne pas le mettre.
         # On peut mixer les deux formats.

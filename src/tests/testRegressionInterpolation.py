@@ -79,8 +79,8 @@ class TestsLiaison(CustomTestsUnitaires):
     def test_validation_valeurs_a_evaluer_warning_extrapolation_possible(self):
         eval_x_initial = np.arange(-1, 11)
         self.l._extrapolation_permise = True
-        msg_suppose = "Extrapolation permise, donc les points en-dehors de l'intervall `x_obs` seront extrapolés. " \
-                      "Veuillez considérer que les valeurs peuvent être loins de la vérité."
+        msg_suppose = "Extrapolation permise, donc les points en-dehors de l'intervalle `x_obs` seront extrapolés. " \
+                      "Veuillez considérer que les valeurs peuvent être loin de la vérité."
         with self.assertWarns(UserWarning) as w:
             self.l._validation_valeurs_a_evaluer(eval_x_initial)
             message_recu = str(w.warnings[0].message)
