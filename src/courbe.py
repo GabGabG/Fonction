@@ -8,17 +8,16 @@ from .style import Marqueurs, Couleurs, Lignes, Style, StyleCourbe
 class Courbe:
     __courbe_courante = 0
 
-    def __init__(self, x: np.ndarray, y: np.ndarray, err_x: Union[Number, np.ndarray] = None,
-                 err_y: Union[Number, np.ndarray] = None, label: str = None):
-        # TODO: Accepter Fonction, Variables
-        self.__x = x.copy()
-        self.__y = y.copy()
+    def __init__(self, x: Iterable, y: Iterable, err_x: Union[Number, Iterable] = None,
+                 err_y: Union[Number, Iterable] = None, label: str = None):
+        self.__x = np.ravel(x)
+        self.__y = np.ravel(y)
         if isinstance(err_x, Number):
             err_x = np.full_like(x, err_x, type(err_x))
         if isinstance(err_y, Number):
             err_y = np.full_like(y, err_y, type(err_y))
-        self.__err_x = None if err_x is None else err_x.copy()
-        self.__err_y = None if err_y is None else err_y.copy()
+        self.__err_x = np.ravel(err_x)
+        self.__err_y = np.ravel(err_y)
         Courbe.__courbe_courante += 1
         if label is None:
             label = f"Courbe {Courbe.__courbe_courante}"
@@ -48,24 +47,24 @@ class Courbe:
         return err_y.copy()
 
     @x.setter
-    def x(self, nouveau_x: np.ndarray):
-        self.__x = nouveau_x.copy()
+    def x(self, nouveau_x: Iterable):
+        self.__x = nouveau_x
 
     @y.setter
-    def y(self, nouveau_y: np.ndarray):
-        self.__y = nouveau_y.copy()
+    def y(self, nouveau_y: Iterable):
+        self.__y = nouveau_y
 
     @err_x.setter
-    def err_x(self, nouveau_err_x: Union[Number, np.ndarray]):
+    def err_x(self, nouveau_err_x: Union[Number, Iterable]):
         if isinstance(nouveau_err_x, Number):
             nouveau_err_x = np.full_like(self.__err_x, nouveau_err_x, type(nouveau_err_x))
-        self.__err_x = nouveau_err_x.copy()
+        self.__err_x = nouveau_err_x
 
     @err_y.setter
-    def err_y(self, nouveau_err_y: Union[Number, np.ndarray]):
+    def err_y(self, nouveau_err_y: Union[Number, Iterable]):
         if isinstance(nouveau_err_y, Number):
             nouveau_err_y = np.full_like(self.__err_y, nouveau_err_y, type(nouveau_err_y))
-        self.__err_y = nouveau_err_y.copy()
+        self.__err_y = nouveau_err_y
 
     def construire_graphique(self, avec_erreurs_x: bool = True, avec_erreurs_y: bool = True,
                              bande_erreur_y: bool = False, style: Style = Style(), ax: plt.Axes = None):
@@ -80,7 +79,7 @@ class Courbe:
         err_y = self.__err_y if avec_erreurs_y and not bande_erreur_y else None
         ax.errorbar(self.__x, self.__y, xerr=err_x, yerr=err_y, label=self.label, **style_dict)
         if bande_erreur_y and err_y is not None:
-            couleur = style["color"]
+            couleur = style_dict["color"]
             ax.fill_between(self.__x, self.__y - err_y, self.__y + err_y, alpha=0.5, color=couleur)
         return ax
 
