@@ -1,5 +1,6 @@
 from src.tests.customTestsUnitaires import CustomTestsUnitaires, main
-from src.fonction import _Variables, VariablesDependantes, VariablesIndependantes, Fonction
+from src.variables import _Variables, VariablesDependantes, VariablesIndependantes
+from src.fonction import Fonction
 from src.regression_interpolation import LiaisonMixte, RegressionPolynomiale, \
     RegressionGenerale
 import numpy as np
