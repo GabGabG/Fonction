@@ -3,6 +3,7 @@ from numbers import Integral
 import numpy as np
 from numbers import Number
 
+
 class _Variables:
     __label__ = "Variables (base)"
 
@@ -805,8 +806,6 @@ class _Variables:
 class VariablesIndependantes(_Variables):
     __label__ = "Variables indépendantes"
 
-    # TODO: Dans __setitem__, s'assurer que pas de doublons après. Même chose pour ajouter.
-
     def __init__(self, x: Iterable, label: str = None,
                  bloquer_ajout_modification_taille: bool = True):
         """
@@ -826,6 +825,41 @@ class VariablesIndependantes(_Variables):
         if any(counts != 1):
             raise ValueError("Les variables indépendantes doivent être uniques.")
         super(VariablesIndependantes, self).__init__(x, bloquer_ajout_modification_taille, label)
+
+    def __setitem__(self, cle: Union[int, slice, Iterable], valeur: Union[int, float, complex, Iterable]) -> None:
+        """
+        Méthode permettant de modifier une ou plusieurs valeurs de l'objet courant à l'aide de la syntaxe
+        self[cle] = valeur, où cle et valeur sont des arguments de la fonction présente.
+        :param cle: int, slice, Iterable. Clé permettant d'accéder à l'élément (ou les éléments) qu'on veut modifier.
+        :param valeur: int, float, complex, Iterable. Nouvelle(s) valeur(s) qu'on veut assigner. Si cet argument ainsi
+        que la clé sont scalaires, l'élément à la position `cle` sera changé à cette valeur. Si la clé n'est pas
+        scalaire (slice ou itérable), tous les éléments accédés par la clé seront changés à cette valeur. Finalement, si
+        cet argument est itérable, la clé doit être soit un slice ou aussi itérable, ils doivent avoir la même taille et
+        un élément d'une variable indépendante ne peut être répété.
+        :return: None. Rien n'est retourné.
+        """
+        if any(self.inclus(valeur)):
+            raise ValueError("Une variable indépendante ne peut pas avoir de répétitions.")
+        super(VariablesIndependantes, self).__setitem__(cle, valeur)
+
+    def ajouter_variables(self, valeurs: Union[int, float, complex, Iterable],
+                          positions: Union[int, slice, Iterable] = -1) -> bool:
+        """
+        Méthode permettant d'ajouter un ou plusieurs éléments à l'objet courant, si la modification de la taille est
+        permise.
+        :param valeurs: int, float, complex ou Iterable. Valeur(s) à ajouter dans l'objet courant. Si itérable, l'ordre
+        est très important, car les valeurs sont ajoutées dans l'ordre qu'elles sont données.
+        :param positions: int, slice, Iterable. Position(s) où ajouter les nouvelles valeurs (ajouter après).
+        Il existe un cas particulier: si positions est -1, ajoute à la fin de l'objet courant (append). Pour le reste,
+        les valeurs sont ajoutées après positions si entier, sinon après chaque entrée si iterable. Si itérable, il
+        doit avoir la même taille que les valeurs et un élément d'une variable indépendante ne peut être répété.
+        :return:not _bloquer_modification_taille, bool. On retourne le booléen associé à la modification de la taille. Si
+        celle-ci n'est pas permise, aucune modification n'est faite et on retourne False. Sinon, on modifie l'objet
+        courant et on retourne True.
+        """
+        if any(self.inclus(valeurs)):
+            raise ValueError("Une variable indépendante ne peut pas avoir de répétitions.")
+        return super(VariablesIndependantes, self).ajouter_variables(valeurs, positions)
 
 
 class VariablesDependantes(_Variables):
@@ -862,4 +896,3 @@ class VariablesDependantes(_Variables):
         variables = fonction(x)
         variables = cls(variables)
         return variables
-
