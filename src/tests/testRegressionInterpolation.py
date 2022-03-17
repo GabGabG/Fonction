@@ -64,8 +64,8 @@ class TestsLiaison(CustomTestsUnitaires):
                       "donc les points en-dehors de l'intervalle `x_obs` ne sont pas pris en compte."
         with self.assertWarns(UserWarning) as w:
             self.l._validation_valeurs_a_evaluer(eval_x_initial)
-            message_recu = str(w.warnings[0].message)
-            self.assertEqual(message_recu, msg_suppose)
+        message_recu = str(w.warnings[0].message)
+        self.assertEqual(message_recu, msg_suppose)
 
     def test_validation_valeurs_a_evaluer_pas_warning_mais_rejet(self):
         eval_x_initial = np.arange(-1, 10)
@@ -83,8 +83,8 @@ class TestsLiaison(CustomTestsUnitaires):
                       "Veuillez considérer que les valeurs peuvent être loin de la vérité."
         with self.assertWarns(UserWarning) as w:
             self.l._validation_valeurs_a_evaluer(eval_x_initial)
-            message_recu = str(w.warnings[0].message)
-            self.assertEqual(message_recu, msg_suppose)
+        message_recu = str(w.warnings[0].message)
+        self.assertEqual(message_recu, msg_suppose)
 
     def test_validation_valeurs_a_evaluer_pas_warning_extrapolation_possible(self):
         eval_x_initial = np.arange(10)
@@ -372,13 +372,6 @@ class TestsInterpolationQuadratique(CustomTestsUnitaires):
         interpolation.interpolation()
         self.assertIsInstance(interpolation.fonction, interp1d)
 
-    # Equation spline quadratique:
-    # Système d'équations "compliquées"
-
-    def test_interpolation_evaluer_points_fonction(self):
-        # Ouf... ça serait compliqué à faire
-        pass
-
     def test_call_fonctionne(self):
         x = np.arange(10)
         y = np.random.randint(0, 100, 10)
@@ -432,13 +425,6 @@ class TestsInterpolationCubique(CustomTestsUnitaires):
         interpolation = r_i.InterpolationCubique(x, y)
         interpolation.interpolation()
         self.assertIsInstance(interpolation.fonction, interp1d)
-
-    # Equation spline cubique:
-    # Système d'équations "compliquées"
-
-    def test_interpolation_evaluer_points_fonction(self):
-        # Ouf... ça serait compliqué à faire
-        pass
 
     def test_call_fonctionne(self):
         x = np.arange(10)
@@ -587,8 +573,8 @@ class TestsRegressionPolynomiale(CustomTestsUnitaires):
                       "donc impossible d'estimer la matrice de covariance"
         with self.assertWarns(RuntimeWarning) as w:
             reg.regression(degre)
-            message_recu = str(w.warnings[0].message)
-            self.assertEqual(message_recu, msg_suppose)
+        message_recu = str(w.warnings[0].message)
+        self.assertEqual(message_recu, msg_suppose)
 
     def test_regression_SSe_correct_pas_warnings(self):
         x = np.array([1, 2, 3, 4, 5, 6])
@@ -856,52 +842,57 @@ class TestsLiaisonMixte(CustomTestsUnitaires):
 
     def test_analyse_continuite_epsilon_None(self):
         bornes = [(0, 10), (10, 20), (20, 50), (50, 100)]
-        continuite = r_i.LiaisonMixte._analyse_continuite(bornes)
-        self.assertTrue(continuite)
+        continuite = r_i.LiaisonMixte._analyse_continuite_et_overlap(bornes)
+        self.assertTupleEqual(continuite, (True, False))
 
-    def test_analyse_continuite_epsilon_none_pas_continu(self):
+    def test_analyse_continuite_epsilon_none_pas_continu_pas_overlap(self):
         bornes = [(0, 10), (10.025, 20), (20, 50), (50, 100)]
-        continuite = r_i.LiaisonMixte._analyse_continuite(bornes)
-        self.assertFalse(continuite)
+        continuite = r_i.LiaisonMixte._analyse_continuite_et_overlap(bornes)
+        self.assertTupleEqual(continuite, (False, False))
 
-    def test_analyse_continuite_epsilon_1e_moins_9(self):
-        bornes = [(0, 10 + 0.99e-9), (10, 20 - 1e-10), (20, 30)]
-        continuite = r_i.LiaisonMixte._analyse_continuite(bornes, 1e-9)
-        self.assertTrue(continuite)
+    def test_analyse_continuite_epsilon_1e_moins_9_pas_overlap(self):
+        bornes = [(0, 10 - 0.99e-9), (10, 20 - 1e-10), (20, 30)]
+        continuite = r_i.LiaisonMixte._analyse_continuite_et_overlap(bornes, 1e-9)
+        self.assertTupleEqual(continuite, (True, False))
 
-    def test_analyse_continuite_epsilon_1e_moins_9_pas_continu(self):
-        bornes = [(0, 10 + 1.01e-9), (10, 20 - 1e-10), (20, 30)]
-        continuite = r_i.LiaisonMixte._analyse_continuite(bornes, 1e-9)
-        self.assertFalse(continuite)
+    def test_analyse_continuite_epsilon_1e_moins_9_pas_continu_pas_overlap(self):
+        bornes = [(0, 10 - 1.01e-9), (10, 20 - 1e-10), (20, 30)]
+        continuite = r_i.LiaisonMixte._analyse_continuite_et_overlap(bornes, 1e-9)
+        self.assertTupleEqual(continuite, (False, False))
+
+    def test_analyse_continuite_avec_overlap_pas_continu(self):
+        bornes = [(0, 10), (5, 15)]
+        continuite = r_i.LiaisonMixte._analyse_continuite_et_overlap(bornes, None)
+        self.assertTupleEqual(continuite, (False, True))
 
     def test_trouver_bornes_nested_lists(self):
         listes = [np.arange(10 + 1), np.arange(10, 20 + 1), np.arange(20, 30)]
         bornes = r_i.LiaisonMixte._trouver_bornes_nested_lists(listes)
         self.assertArrayEqual(bornes, np.array([[0, 10], [10, 20], [20, 29]]).T)
 
-    def test_trouver_bornes_nested_lists_retour_continuite_est_continue_epsilon_none(self):
+    def test_trouver_bornes_nested_lists_retour_continuite_est_continue_epsilon_none_pas_overlap(self):
         listes = [np.arange(10 + 1), np.arange(10, 20 + 1), np.arange(20, 30)]
-        bornes, c = r_i.LiaisonMixte._trouver_bornes_nested_lists(listes, None, True)
+        bornes, continuite, overlap = r_i.LiaisonMixte._trouver_bornes_nested_lists(listes, None, True)
         self.assertArrayEqual(bornes, np.array([[0, 10], [10, 20], [20, 29]]).T)
-        self.assertTrue(c)
+        self.assertTupleEqual((continuite, overlap), (True, False))
 
-    def test_trouver_bornes_nested_lists_retour_continuite_est_pas_continue_epsilon_none(self):
+    def test_trouver_bornes_nested_lists_retour_continuite_est_pas_continue_epsilon_none_pas_overlap(self):
         listes = [np.arange(10), np.arange(10, 20), np.arange(20, 30)]
-        bornes, c = r_i.LiaisonMixte._trouver_bornes_nested_lists(listes, None, True)
+        bornes, continuite, overlap = r_i.LiaisonMixte._trouver_bornes_nested_lists(listes, None, True)
         self.assertArrayEqual(bornes, np.array([[0, 9], [10, 19], [20, 29]]).T)
-        self.assertFalse(c)
+        self.assertTupleEqual((continuite, overlap), (False, False))
 
-    def test_trouver_bornes_nested_lists_retour_continuite_est_continue_epsilon_1(self):
+    def test_trouver_bornes_nested_lists_retour_continuite_est_continue_epsilon_1_pas_overlap(self):
         listes = [np.arange(10), np.arange(10, 20), np.arange(20, 30)]
-        bornes, c = r_i.LiaisonMixte._trouver_bornes_nested_lists(listes, 1, True)
+        bornes, continuite, overlap = r_i.LiaisonMixte._trouver_bornes_nested_lists(listes, 1, True)
         self.assertArrayEqual(bornes, np.array([[0, 9], [10, 19], [20, 29]]).T)
-        self.assertTrue(c)
+        self.assertTupleEqual((continuite, overlap), (True, False))
 
-    def test_trouver_bornes_nested_lists_retour_continuite_est_pas_continue_epsilon_0p5(self):
+    def test_trouver_bornes_nested_lists_retour_continuite_est_pas_continue_epsilon_0p5_pas_overlap(self):
         listes = [np.arange(10), np.arange(10, 20), np.arange(20, 30)]
-        bornes, c = r_i.LiaisonMixte._trouver_bornes_nested_lists(listes, 0.5, True)
+        bornes, continuite, overlap = r_i.LiaisonMixte._trouver_bornes_nested_lists(listes, 0.5, True)
         self.assertArrayEqual(bornes, np.array([[0, 9], [10, 19], [20, 29]]).T)
-        self.assertFalse(c)
+        self.assertTupleEqual((continuite, overlap), (False, False))
 
     def test_creer_fonction_une_seule_liaison(self):
         bornes = np.array([[0], [9]])
@@ -971,9 +962,24 @@ class TestsLiaisonMixte(CustomTestsUnitaires):
         liaisons = [l1, l2]
         with self.assertRaises(ValueError) as e:
             r_i.LiaisonMixte(liaisons)
-            msg = "Les liaisons ne sont pas continues selon une différence absolue maximale de 0. " \
-                  "Veuillez vous assurer qu'elles sont continues ou que les discontinuités sont permises."
-            self.assertEqual(str(e), msg)
+        msg = "Les liaisons ne sont pas continues selon une différence absolue maximale de 0. " \
+              "Veuillez vous assurer qu'elles sont continues ou que les discontinuités sont permises."
+        self.assertEqual(str(e.exception), msg)
+
+    def test_init_pas_ok_overlap_present(self):
+        x_1 = np.arange(10)
+        y_1 = x_1 ** 2
+        x_2 = np.arange(8.5, 20)
+        y_2 = x_2.copy()
+        l1 = r_i.RegressionPolynomiale(x_1, y_1)
+        l2 = r_i.RegressionPolynomiale(x_2, y_2)
+        l1.regression(2)
+        l2.regression(1)
+        liaisons = [l1, l2]
+        with self.assertRaises(ValueError) as e:
+            r_i.LiaisonMixte(liaisons, True)
+        msg = "Il y a une superposition des bornes (donc des liaisons)."
+        self.assertEqual(str(e.exception), msg)
 
     def test_init_attributs(self):
         x_1 = np.arange(10)
