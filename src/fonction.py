@@ -10,6 +10,9 @@ from numbers import Number
 import pandas as pd
 
 
+# TODO: Finir la doc
+# TODO Faire une classe Fonctions qui crée plusieurs objets Fonction
+
 class Fonction:
 
     def __init__(self, x: Iterable, y: Iterable, label: str = "Fonction"):
