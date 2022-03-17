@@ -5,6 +5,8 @@ from scipy.interpolate import interp1d
 from warnings import warn
 
 
+# TODO: Finir documentation
+
 class _Liaison:
     # Variable statique stipulant si l'addition de _Liaison permet les discontinuités. Par défaut, c'est non.
     __add_permet_discontinuites__ = False
@@ -32,6 +34,14 @@ class _Liaison:
         self._fonction = None
 
     def __call__(self, eval_x: Union[int, float, Iterable], afficher_warning: bool = True) -> np.ndarray:
+        """
+        Méthode permettant d'appeler l'objet courant avec des arguments pour évaluer la liaison à certain(s) point(s).
+        Voir `evaluer_aux_points` pour plus d'information.
+        :param eval_x: int, float ou iterable. Point(s) où évaluer la liaison.
+        :param afficher_warning: bool. Booléen stipulant si on doit afficher les warnings. Ceux-ci peuvent être
+        dérangeants à la longue, c'est pourquoi l'option de ne pas les afficher existe.
+        :return: eval_y, l'évaluation de la liaison aux points eval_x.
+        """
         eval_y = self.evaluer_aux_points(eval_x, afficher_warning)
         return eval_y
 
@@ -50,6 +60,11 @@ class _Liaison:
 
     @property
     def info(self) -> dict:
+        """
+        Propriété donnant des informations sur l'objet courant. Pour cette classe mère, on ne retourne que la fonction
+        de liaison. Les classes filles ajoutent plus d'éléments.
+        :return: un dictionnaire d'informations. Pour l'instant, seulement la fonction de liaison est présente.
+        """
         return {"fonction": self._fonction}
 
     @property
@@ -238,9 +253,9 @@ class LiaisonGenerale(_Liaison):
 
 class LiaisonMixte(_Liaison):
     # TODO: Faire de quoi pour LiaisonGenerale (avec variables [])
-    # TODO: Check si overlap de bornes, que faire?
     def __init__(self, liaisons: Union[_Liaison, List[_Liaison], Tuple[_Liaison, ...]],
-                 discontinuites_permises: bool = False, epsilon_continuite: float = None, label: str = "Liaison mixte"):
+                 discontinuites_permises: bool = False, epsilon_continuite: float = None, label: str = "Liaison mixte",
+                 permettre_overlap_bornes: bool = False):
         """
         Constructeur de la classe `LiaisonMixte`. Sert à modéliser des liaisons par parties, c'est-à-dire dont la
         fonction de liaison change au cours des valeurs observées.
@@ -251,6 +266,8 @@ class LiaisonMixte(_Liaison):
         :param epsilon_continuite: float. Écart maximal permis pour considérer la continuité des valeur observées. None`
         par défaut.
         :param label: str. Nom de la liaison mixte. "Liaison mixte" par défaut.
+        :param permettre_overlap_bornes: bool. Booléen spécifiant si on permet l'overlap de bornes (donc overlap de
+        liaisons). `False` par défaut.
         """
         x_obs = []
         y_obs = []
@@ -264,11 +281,14 @@ class LiaisonMixte(_Liaison):
             x_obs.append(liaison.x_obs)
             y_obs.append(liaison.y_obs)
         self._liaisons = liaisons
-        self._bornes, continuite = self._trouver_bornes_nested_lists(x_obs, epsilon_continuite, True)
+        self._bornes, continuite, overlap = self._trouver_bornes_nested_lists(x_obs, epsilon_continuite, True)
         if not continuite and not discontinuites_permises:
             epsilon = epsilon_continuite if epsilon_continuite is not None else 0
             msg = f"Les liaisons ne sont pas continues selon une différence absolue maximale de {epsilon}. " \
                   f"Veuillez vous assurer qu'elles sont continues ou que les discontinuités sont permises."
+            raise ValueError(msg)
+        if overlap and not permettre_overlap_bornes:
+            msg = "Il y a une superposition des bornes (donc des liaisons)."
             raise ValueError(msg)
         x_obs_concat = np.concatenate(x_obs)
         y_obs_concat = np.concatenate(y_obs)
@@ -279,6 +299,11 @@ class LiaisonMixte(_Liaison):
 
     @property
     def info(self) -> dict:
+        """
+        Propriété donnant des informations sur l'objet courant.
+        :return: un dictionnaire d'informations. Pour cette classe, on retrouve les informations relatives à chaque
+        liaison présente dans la liaison mixte courante. Voir `info` des autres classes.
+        """
         info = {liaison.label: liaison.info for liaison in self._liaisons}
         return info
 
@@ -337,33 +362,41 @@ class LiaisonMixte(_Liaison):
 
     @staticmethod
     def _trouver_bornes_nested_lists(listes: List[Iterable], epsilon_continuite: float = None,
-                                     retour_continuite: bool = False) -> np.ndarray:
+                                     retour_all: bool = False) -> np.ndarray:
         """
         Méthode statique permettant d'extraire les bornes à partir d'une liste d'itérables de `_Liaison`.
         :param listes: list. Liste contenant une liste ou tuple d'objets `_Liaison`.
         :param epsilon_continuite: float. Écart maximal à considérer pour la continuité des bornes. `None` par défaut,
         donc aucun écart considéré.
-        :param retour_continuite: bool. Booléen indiquant si on doit retourner un booléen indiquant si les liaisons
-        internes sont continues. `False` par défaut.
+        :param retour_all: bool. Booléen indiquant si on doit retourner un booléen indiquant si les liaisons
+        internes sont continues, ainsi qu'un autre booléen indiquant s'il y a un overlap de bornes. `False` par défaut.
         :return: ret. On retourne toujours au moins les bornes. Ces bornes sont un array NumPy 2D dont la première ligne
         est les bornes minimales de chaque intervalle observé des liaisons internes. La seconde ligne est les bornes
-        maximales. Dans le cas où `retour_continuite` est `True`, on retourne aussi `True` si les liaisons sont
-        considérées continues. `False` sinon.
+        maximales. Dans le cas où `retour_all` est `True`, on retourne aussi `True` si les liaisons sont
+        considérées continues. `False` sinon, ainsi que `True` s'il n'y a pas d'overlap de liaisons, `False` sinon.
         """
         bornes = []
         for iterable in listes:
             minimum = np.min(iterable)
             maximum = np.max(iterable)
             bornes.append((minimum, maximum))
-        continuite = LiaisonMixte._analyse_continuite(bornes, epsilon_continuite)
+        continuite, overlap = LiaisonMixte._analyse_continuite_et_overlap(bornes, epsilon_continuite)
         bornes = np.array(bornes).T
         ret = bornes
-        if retour_continuite:
-            ret = bornes, continuite
+        if retour_all:
+            ret = bornes, continuite, overlap
         return ret
 
     @staticmethod
-    def _analyse_continuite(bornes: List[tuple], epsilon: float = None) -> bool:
+    def _analyse_continuite_et_overlap(bornes: List[tuple], epsilon: float = None) -> Tuple[bool, bool]:
+        """
+        Méthode statique permettant d'évaluer la continuité et si les bornes (donc les liaisons) sont superposées.
+        :param bornes: liste de tuples. Bornes des liaisons, dans le format `(min_i, max_i)`.
+        :param epsilon: float. Argument spécifiant quelle est la tolérance de discontinuité. `None` par défaut, cela
+        veut dire aucune tolérance.
+        :return: un tuple de booléens. Le premier spécifie s'il y a continuité (`True` si c'est le cas), alors que le
+        second spécifie s'il y a overlap (`True` si c'est le cas).
+        """
         minimums = []
         maximums = []
         for b in bornes:
@@ -375,10 +408,21 @@ class LiaisonMixte(_Liaison):
             continuite = np.array_equal(minimums[1:], maximums[:-1])
         else:
             continuite = np.allclose(minimums[1:], maximums[:-1], atol=epsilon, rtol=0)
-        return continuite
+        overlap = not all(np.greater_equal(minimums[1:], maximums[:-1]))
+        return continuite, overlap
 
     @staticmethod
     def _creer_fonction(liaisons: Union[List[_Liaison], Tuple[_Liaison, ...]], bornes: np.ndarray) -> Callable:
+        """
+        Méthode statique permettant de créer la fonction de liaisons générale entre les liaisons présentes dans l'objet
+        courant. Ainsi, si on a deux liaisons dont les bornes sont respectivement (0, 10) et (10, 20), si on veut
+        évaluer à 11, la fonction créée ici saura quelle liaison utiliser.
+        :param liaisons: liste, tuple. Liste ou tuple de liaisons présentes dans l'objet courant.
+        :param bornes: array 2D de bornes. La première ligne correspond aux bornes minimales, alors que la seconde
+        correspond au bornes maximales.
+        :return: f, un objet "callable". Cet objet prend en argument un/des point(s) où évaluer la liaison mixte
+        courante.
+        """
         borne_min_arg = bornes[0].argmin()
         borne_min = bornes[0, borne_min_arg]
         borne_max_arg = bornes[1].argmax()
@@ -404,13 +448,38 @@ class LiaisonMixte(_Liaison):
 
         return f
 
-    def executer(self, liaison_execution_args: dict = None):
+    def executer(self, liaison_execution_args: dict = None) -> None:
+        """
+        Méthode permettant de rendre la liaison mixte courant prête à être utilisée. Par prête, on entend que les
+        diverses liaisons internes, comme les régressions ou interpolations, sont prêtes, donc qu'on peut évaluer
+        à différents points.
+        :param liaison_execution_args: dict. Dictionnaire contenant les arguments ou "key words arguments" pour exécuter
+        les diverses liaisons. Ce dictionnaire peut prendre deux formes. La première est dans le format
+        `{0 :(argument 0, argument 1, ...), 2 : (argument 0, argument 1,...)}`, on a donc essentiellement un format
+        clé : valeur où la clé est l'index de la liaison à l'interne et la valeur est un tuple d'arguments pour
+        l'exécution de la liaison `i`. Faire attention à l'ordre des arguments. Si une exécution particulière n'a pas
+        besoin d'arguments, ne pas l'inclure, comme dans l'exemple du format où la liaison `1` n'est pas dans le
+        dictionnaire.
+
+        Le second format est `{0 : {"nom_argument_0" : argument 0, ...}, 2 : {"nom_argument_1" : argument 1, ...}}`
+        soit un format où la clé est encore l'index de la liaison à l'interne, mais la valeur est maintenant un
+        dictionnaire. Les clés de ce dictionnaire interne sont les noms d'arguments et les valeurs sont les valeurs que
+        prennent les arguments. Encore une fois, ne pas mettre d'élément dans le dictionnaire si une liaison n'a pas
+        besoin d'arguments spécifiques pour son exécution.
+
+        Important : on peut mélanger les deux formats.
+
+        Une fois cette méthode appelée, on peut utiliser la liaison mixte courante pour évaluer à certains points.
+        :return: Rien
+        """
         # liaison_execution_args, dictionnaire d'arguments pouvant avoir deux formes:
         # Forme 1: {0:(argument 0, argument 1, ...), 2:(argument 0, argument 1,...)}
         # où clé est index liaison. Si pas besoin d'argument, pas inclure, comme ^, 1 n'est pas présent
         # Forme 2: {0:{"nom_argument_0":argument 0, ...}, 2:{"nom_argument_1": argument 1, ...}}
         # version "kwargs", où encore une fois clé = index liaison. Si pas d'argument, ne pas le mettre.
         # On peut mixer les deux formats.
+        if liaison_execution_args is None:
+            liaison_execution_args = dict()
         for i, liaison in enumerate(self._liaisons):
             arguments = liaison_execution_args.get(i, tuple())
             if liaison.pret and arguments == tuple():
