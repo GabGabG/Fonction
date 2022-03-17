@@ -7,7 +7,6 @@ import numpy as np
 import os
 
 
-
 class TestsFonction(CustomTestsUnitaires):
 
     def test_init_pas_objets_variables(self):
@@ -213,7 +212,7 @@ class TestsFonction(CustomTestsUnitaires):
               "fois ou utiliser `ajouter_liaisons` avec toutes ses liaisons internes."
         with self.assertRaises(TypeError) as e:
             f.ajouter_liaison(LiaisonMixte)
-            self.assertEqual(str(e), msg)
+        self.assertEqual(str(e.exception), msg)
 
     def test_ajouter_liaison_bornes_none_pas_executer(self):
         x = np.arange(10)
@@ -313,7 +312,8 @@ class TestsFonction(CustomTestsUnitaires):
         with self.assertRaises(ValueError) as e:
             f.ajouter_liaisons([InterpolationLineaire, InterpolationQuadratique, InterpolationCubique], [0, 2],
                                [2, 5, 10], discontinuites_permises=True)
-            self.assertEqual(str(e), "Il doit y avoir autant de liaisons que de bornes inférieures et supérieures")
+        msg = "Il doit y avoir autant de liaisons que de bornes inférieures et supérieures"
+        self.assertEqual(str(e.exception), msg)
 
     def test_ajouter_liaisons_pas_meme_nombre_de_bornes_sup_que_nombre_liaisons(self):
         x = np.linspace(0, 10, 100)
@@ -322,7 +322,8 @@ class TestsFonction(CustomTestsUnitaires):
         with self.assertRaises(ValueError) as e:
             f.ajouter_liaisons([InterpolationLineaire, InterpolationQuadratique, InterpolationCubique], [0, 2, 5],
                                [5, 10], discontinuites_permises=True)
-            self.assertEqual(str(e), "Il doit y avoir autant de liaisons que de bornes inférieures et supérieures")
+        msg = "Il doit y avoir autant de liaisons que de bornes inférieures et supérieures"
+        self.assertEqual(str(e.exception), msg)
 
     def test_call_pas_liaison(self):
         x = np.arange(10)
@@ -331,7 +332,7 @@ class TestsFonction(CustomTestsUnitaires):
         msg = "Veuillez spécifier une manière de 'lier' les valeurs."
         with self.assertRaises(ValueError) as e:
             f(x)
-            self.assertEqual(str(e), msg)
+        self.assertEqual(str(e.exception), msg)
 
     def test_call_liaison_pas_prete(self):
         x = np.arange(10)
@@ -341,7 +342,7 @@ class TestsFonction(CustomTestsUnitaires):
         f.ajouter_liaison(RegressionPolynomiale, None, None, "Reg", False, None, False)
         with self.assertRaises(ValueError) as e:
             f(x)
-            self.assertNotEqual(str(e), not_msg)
+        self.assertNotEqual(str(e), not_msg)
 
     def test_call_liaison_prete(self):
         RegressionPolynomiale.__warning_covariance_matrice__ = True
@@ -397,8 +398,8 @@ class TestsFonction(CustomTestsUnitaires):
         warning_msg = "Liaison maintenant invalide."
         with self.assertWarns(UserWarning) as w:
             f[0] = (-1, -1)
-            self.assertNotEqual(str(w), warning_msg)
-            self.assertIsNone(f.liaison)
+        self.assertNotEqual(str(w), warning_msg)
+        self.assertIsNone(f.liaison)
 
     def test_ajouter_variable_liaison_maintenant_invalide(self):
         x = np.arange(10)
@@ -408,8 +409,8 @@ class TestsFonction(CustomTestsUnitaires):
         warning_msg = "Liaison maintenant invalide."
         with self.assertWarns(UserWarning) as w:
             f.ajouter_variables((-1, 0), 0)
-            self.assertNotEqual(str(w), warning_msg)
-            self.assertIsNone(f.liaison)
+        self.assertNotEqual(str(w), warning_msg)
+        self.assertIsNone(f.liaison)
 
     def test_enlever_variable_liaison_maintenant_invalide(self):
         x = np.arange(10)
@@ -419,8 +420,8 @@ class TestsFonction(CustomTestsUnitaires):
         warning_msg = "Liaison maintenant invalide."
         with self.assertWarns(UserWarning) as w:
             f.enlever_variables(slice(10))
-            self.assertNotEqual(str(w), warning_msg)
-            self.assertIsNone(f.liaison)
+        self.assertNotEqual(str(w), warning_msg)
+        self.assertIsNone(f.liaison)
 
     def test_from_csv_file_pas_de_noms_de_colonnes(self):
         file = os.path.join(os.path.dirname(__file__), r"testData\\test_from_csv.csv")
