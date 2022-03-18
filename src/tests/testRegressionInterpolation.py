@@ -767,10 +767,6 @@ class TestsRegressionGenerale(CustomTestsUnitaires):
     def test_regression_change_avec_limites_output(self):
         # Fonction "carrée"
         def f(x, borne_droite, borne_gauche, minimum, maximum):
-            if borne_droite < borne_gauche:
-                t = borne_droite
-                borne_droite = borne_gauche
-                borne_gauche = t
             res = np.full_like(x, minimum, dtype=float)
             res[(borne_gauche <= x) & (x <= borne_droite)] = maximum
             return res
