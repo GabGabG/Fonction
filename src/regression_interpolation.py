@@ -494,25 +494,67 @@ class LiaisonMixte(_Liaison):
 class _InterpolationBase(_Liaison):
 
     def __init__(self, x_obs: Iterable, y_obs: Iterable, label: str):
+        """
+        Constructeur de la classe `_InterpolationBase`, classe de base pour effectuer une liaison d'interpolation. Ne
+        devrait pas être utilisée comme telle, mais plutôt dériver de cette classe pour différentes interpolations.
+        :param x_obs: itérable. Valeurs de la variable indépendante, observables de l'axe horizontal.
+        :param y_obs: itérable. Valeurs de la variable dépendante, observable de l'axe vertical.
+        :param label: str. Label/nom de la liaison d'interpolation.
+        """
         super(_InterpolationBase, self).__init__(x_obs, y_obs, label)
 
     @property
     def info(self) -> dict:
+        """
+        Propriété de la liaison courante. Est essentiellement un dictionnaire dont la clé est tout simplement
+        "fonction interpolation", alors que la valeur est la fonction d'interpolation elle-même.
+        :return: dictionnaire contenant la fonction d'interpolation elle-même.
+        """
         return {"fonction interpolation": self._fonction}
 
-    def interpolation(self, permettre_extrapolation: bool = False):
+    def interpolation(self, permettre_extrapolation: bool = False) -> Callable:
+        """
+        Méthode permettant d'effectuer l'interpolation. Effectuer l'interpolation signifie résoudre l'équation
+        d'interpolation (dépend du degré). Comme cette classe est générique, cette méthode n'est pas définie et lance
+        une exception.
+        :param permettre_extrapolation: bool. Booléen stipulant si on permet d'extrapoler en-dehors des valeurs de
+        l'observable x donné au constructeur.
+        :return: un objet `callable`, soit la fonction d'interpolation et d'évaluation elle-même. Dans le cas présent,
+        on ne retourne rien, mais on lance une exception.
+        """
         raise NotImplementedError("Doit être implémentée dans les sous-classes.")
 
-    def executer(self, permettre_extrapolation: bool = False):
-        return self.interpolation(permettre_extrapolation)
+    def executer(self, permettre_extrapolation: bool = False) -> None:
+        """
+        Encapsulation de la méthode `interpolation`. Sert de pont entre les différentes variantes et classe dérivées de
+        `_Liaison`. Ne fait qu'appeler `interpolation`.
+        :param permettre_extrapolation: bool. Booléen stipulant si on permet d'extrapoler en-dehors des valeurs de
+        l'observable x donné au constructeur.
+        :return: Rien.
+        """
+        self.interpolation(permettre_extrapolation)
 
 
 class InterpolationLineaire(_InterpolationBase):
 
     def __init__(self, x_obs: Iterable, y_obs: Iterable, label: str = "Interpolation linéaire"):
+        """
+        Constructeur de la classe `InterpolationLineaire`. Sert à encapsuler une interpolation linéaire des données.
+        Hérite de `_InterpolationBase`.
+        :param x_obs: iterable. Observables x, variables indépendantes.
+        :param y_obs: iterable. Observable y, variables dépendantes.
+        :param label: str. Label/nom de l'interpolation linéaire. "Interpolation linéaire" par défaut.
+        """
         super(InterpolationLineaire, self).__init__(x_obs, y_obs, label)
 
-    def interpolation(self, permettre_extrapolation: bool = False):
+    def interpolation(self, permettre_extrapolation: bool = False) -> Callable:
+        """
+        Redéfinition de la méthode `interpolation` de la classe `_InterpolationBase`. Voir `interpolation` de la classe
+        mère pour plus d'information.
+        :param permettre_extrapolation: bool. Booléen stipulant si on permet d'extrapoler en-dehors des valeurs de
+        l'observable x donné au constructeur.
+        :return:  un objet `callable`, soit la fonction d'interpolation et d'évaluation elle-même.
+        """
         fill_value = np.nan
         if permettre_extrapolation:
             fill_value = "extrapolate"
@@ -524,9 +566,23 @@ class InterpolationLineaire(_InterpolationBase):
 class InterpolationQuadratique(_InterpolationBase):
 
     def __init__(self, x_obs: Iterable, y_obs: Iterable, label: str = "Interpolation quadratique"):
+        """
+        Constructeur de la classe `InterpolationQuadratique`.  Sert à encapsuler une interpolation quadratique des
+        données. Hérite de `_InterpolationBase`.
+        :param x_obs: iterable. Observables x, variables indépendantes.
+        :param y_obs: iterable. Observable y, variables dépendantes.
+        :param label: str. Label/nom de l'interpolation linéaire. "Interpolation quadratique" par défaut.
+        """
         super(InterpolationQuadratique, self).__init__(x_obs, y_obs, label)
 
     def interpolation(self, permettre_extrapolation: bool = False):
+        """
+        Redéfinition de la méthode `interpolation` de la classe `_InterpolationBase`. Voir `interpolation` de la classe
+        mère pour plus d'information.
+        :param permettre_extrapolation: bool. Booléen stipulant si on permet d'extrapoler en-dehors des valeurs de
+        l'observable x donné au constructeur.
+        :return:  un objet `callable`, soit la fonction d'interpolation et d'évaluation elle-même.
+        """
         fill_value = np.nan
         if permettre_extrapolation:
             fill_value = "extrapolate"
@@ -538,9 +594,23 @@ class InterpolationQuadratique(_InterpolationBase):
 class InterpolationCubique(_InterpolationBase):
 
     def __init__(self, x_obs: Iterable, y_obs: Iterable, label: str = "Interpolation cubique"):
+        """
+        Constructeur de la classe `InterpolationCubique`.  Sert à encapsuler une interpolation cubique des données.
+        Hérite de `_InterpolationBase`.
+        :param x_obs: iterable. Observables x, variables indépendantes.
+        :param y_obs: iterable. Observable y, variables dépendantes.
+        :param label: str. Label/nom de l'interpolation linéaire. "Interpolation cubique" par défaut.
+        """
         super(InterpolationCubique, self).__init__(x_obs, y_obs, label)
 
     def interpolation(self, permettre_extrapolation: bool = False):
+        """
+        Redéfinition de la méthode `interpolation` de la classe `_InterpolationBase`. Voir `interpolation` de la classe
+        mère pour plus d'information.
+        :param permettre_extrapolation: bool. Booléen stipulant si on permet d'extrapoler en-dehors des valeurs de
+        l'observable x donné au constructeur.
+        :return:  un objet `callable`, soit la fonction d'interpolation et d'évaluation elle-même.
+        """
         fill_value = np.nan
         if permettre_extrapolation:
             fill_value = "extrapolate"
@@ -552,22 +622,59 @@ class InterpolationCubique(_InterpolationBase):
 class _RegressionBase(_Liaison):
 
     def __init__(self, x_obs: Iterable, y_obs: Iterable, label: str):
+        """
+        Constructeur de la classe `_RegressionBase`, analogue de `_InterpolationBase`, mais dans le cas des régressions.
+        Hérite de `_Liaison`. Cette classe ne devrait pas être utilisée comme telle, mais plutôt dérivée pour permettre
+        différents types de régressions.
+        :param x_obs: iterable. Observables x, variables indépendantes.
+        :param y_obs: iterable. Observable y, variables dépendantes.
+        :param label: str. Label/nom de l'interpolation linéaire.
+        """
         super(_RegressionBase, self).__init__(x_obs, y_obs, label)
         self._reg_info = {"paramètres optimisés": None, "sigma paramètres": None, "SSe": None,
                           "fonction": None}
 
     @property
     def info(self) -> dict:
+        """
+        Propriété de la classe courante. Permet d'obtenir un dictionnaire d'information à propos de la régression qui
+        a été faite. Les informations sont : `paramètres optimisés`, `sigma paramètres` (écart-type associé aux
+        paramètres), `SSe` (sum of squared errors) et `fonction` (la fonction de régression, qu'on peut utiliser pour
+        évaluer à différents points).
+        :return: le dictionnaire d'informations.
+        """
         return self._reg_info
 
-    def regression(self, *args, **kwargs):
+    def regression(self, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray, float]:
+        """
+        Méthode permettant d'effectuer la régression. Dans le cas présent, comme il s'agit d'une classe générique, elle
+        ne fait que lancer une exception. Les classes filles doivent implémenter leur propres régression.
+        :param args: arguments. Temporaire, pour que la signature de fonction concorde avec les redéfinitions.
+        :param kwargs: arguments "mots-clés". Temporaire, pour que la signature de fonction concorde avec les
+        redéfinitions.
+        :return: Un tuple contenant un array (les paramètres optimisés), suivi d'un autre array (l'erreur estimée des
+        paramètres, soit l'écart-type) et la SSe. Dans le cas présent, rien n'est retourné, mais on lance une exception.
+        """
         raise NotImplementedError("Doit être implémentée dans les sous-classes.")
 
-    def executer(self, *args, **kwargs):
-        return self.regression(*args, **kwargs)
+    def executer(self, *args, **kwargs) -> None:
+        """
+        Méthode encapsulant `regression`. Voir celle-ci pour plus d'information.
+        :param args: arguments. Temporaire, pour que la signature de fonction concorde avec les redéfinitions.
+        :param kwargs: arguments "mots-clés". Temporaire, pour que la signature de fonction concorde avec les
+        redéfinitions.
+        :return: Rien.
+        """
+        self.regression(*args, **kwargs)
 
     @classmethod
-    def generer_sigma_parametres(cls, matrice_covariance: np.ndarray):
+    def generer_sigma_parametres(cls, matrice_covariance: np.ndarray) -> np.ndarray:
+        """
+        Méthode de classe permettant de calculer l'écart-type des paramètres. Cet écart-type est obtenu par la racine
+        carrée des éléments de la diagonale de la matrice de covariance de la régression.
+        :param matrice_covariance: array. Matrice de covariance de la régression.
+        :return: l'écart-type des paramètres, soit la racine carrée de la diagonale de la matrice de covariance.
+        """
         return np.sqrt(np.diag(matrice_covariance))
 
 
@@ -575,10 +682,24 @@ class RegressionPolynomiale(_RegressionBase):
     __warning_covariance_matrice__ = False
 
     def __init__(self, x_obs: Iterable, y_obs: Iterable, label: str = "Regression polynomiale"):
+        """
+        Constructeur de la classe `RegressionPolynomiale`. Sert à encapsuler une régression polynomiale. Hérite de la
+        classe `_RégressionBase`.
+        :param x_obs: iterable. Observables x, variables indépendantes.
+        :param y_obs: iterable. Observable y, variables dépendantes.
+        :param label: str. Label/nom de l'interpolation linéaire. "Regression polynomiale" par défaut.
+        """
         super(RegressionPolynomiale, self).__init__(x_obs, y_obs, label)
         self._reg_info["degré"] = None
 
-    def regression(self, degre: int, permettre_extrapolation: bool = False):
+    def regression(self, degre: int, permettre_extrapolation: bool = False) -> Tuple[np.ndarray, np.ndarray, float]:
+        """
+        Méthode permettant d'effectuer la régression polynomiale sur les données courantes.
+        :param degre: int. Degré de la régression. Doit être un entier positif.
+        :param permettre_extrapolation: bool. Booléen stipulant si on permet l'extrapolation des données en-dehors
+        des valeurs de l'observable x.
+        :return: un tuple contenant les coefficients estimés, l'incertitude sur les coefficients et la SSe.
+        """
         self._extrapolation_permise = permettre_extrapolation
         V = self.generer_matrice_Vandermonde(self._x_obs, degre)
         coefs_estimes, autres = np.polynomial.polynomial.polyfit(self._x_obs, self._y_obs, degre, full=True)
@@ -600,12 +721,38 @@ class RegressionPolynomiale(_RegressionBase):
         return coefs_estimes.copy(), sigma_coefs.copy(), SSe
 
     @classmethod
-    def generer_matrice_Vandermonde(cls, x: np.ndarray, degre: int, puissance_croissante: bool = False):
+    def generer_matrice_Vandermonde(cls, x: np.ndarray, degre: int, puissance_croissante: bool = False) -> np.ndarray:
+        """
+        Méthode de classe permettant de générer une matrice de Vandermonde associée au degré de la régression demandé
+        ainsi qu'à la variable indépendante.
+        :param x: array. Variable indépendante de la régression.
+        :param degre: int. Degré de la régression. Doit être positif.
+        :param puissance_croissante: bool. Booléen stipulant si la matrice de Vandermonde doit être en puissance
+        croissante. `False` par défaut, les puissances sont décroissantes.
+        :return: la matrice de Vandermonde associée à la régression.
+        """
         return np.vander(x, degre + 1, puissance_croissante)
 
     @classmethod
     def generer_matrice_covariance(cls, matrice_Vandermonde: np.ndarray, SSe: float, nb_obs_x: int, degre: int,
-                                   afficher_warning: bool = True):
+                                   afficher_warning: bool = True) -> np.ndarray:
+        """
+        Méthode de classe permettant de générer la matrice de covariance d'une régression. La matrice de covariance est
+        définie par $Var(\hat{\beta}) = \hat{\sigma}^2(\textbf{X}^T\textbf{X})^{-1}$ où $\hat{\beta}$ sont les
+        estimations des paramètres, $\hat{\sigma}^2$ est l'estimation de la variance  (donnée par $SSe / (n - m)$ où $n$
+        est le nombre de points et $m$ est le nombre de paramètres) et $\textbf{X}$ est la matrice de Vandermonde
+        associée.
+        :param matrice_Vandermonde: array. Matrice de Vandermonde associée à la régression dont on veut la matrice de
+        covariance.
+        :param SSe: float. Sum of squared errors, (somme des erreurs au carré) associée à la régression dont on veut la
+        matrice de covariance.
+        :param nb_obs_x: int. Nombre d'éléments de l'observable x associé à la régression dont on veut la matrice de
+        covariance.
+        :param degre: int. Degré associé à la régression dont on veut la matrice de covariance.
+        :param afficher_warning: bool. Booléen stipulant si on veut afficher les avertissements relatifs au calcul de la
+        matrice de covariance. `True` par défaut, on les affiche.
+        :return: cov, la matrice de covariance.
+        """
         if afficher_warning and not cls.__warning_covariance_matrice__:
             msg = "La matrice de covariance n'est peut-être pas exacte. " \
                   "Elle est toutefois proportionnelle à un facteur multiplicatif " \
@@ -615,8 +762,8 @@ class RegressionPolynomiale(_RegressionBase):
         denom = nb_obs_x - (degre + 1)
         if denom <= 0:
             raise ValueError("Il n'y a pas assez de points pour bien regresser. Veuillez en utiliser plus.")
-        sigma = SSe / denom
-        cov = sigma * np.linalg.inv(np.dot(matrice_Vandermonde.T, matrice_Vandermonde))
+        sigma_carre = SSe / denom
+        cov = sigma_carre * np.linalg.inv(np.dot(matrice_Vandermonde.T, matrice_Vandermonde))
         return cov
 
 
@@ -626,7 +773,8 @@ class RegressionGenerale(_RegressionBase):
         super(RegressionGenerale, self).__init__(x_obs, y_obs, label)
 
     def regression(self, fonction: Callable, estimation_initiale_parametres: tuple = None,
-                   limites_parametres: tuple = None, permettre_extrapolation: bool = False):
+                   limites_parametres: tuple = None, permettre_extrapolation: bool = False) -> Tuple[
+        np.ndarray, np.ndarray, None]:
         self._extrapolation_permise = permettre_extrapolation
         if limites_parametres is None:
             limites_parametres = (-np.inf, np.inf)
@@ -647,17 +795,17 @@ class RegressionGenerale(_RegressionBase):
     # retrouver totalement perdu avec une régression qui n'a aucun sens.
 
     @staticmethod
-    def fonction_gaussienne(x: np.ndarray, a: float, mu: float, sigma: float, b: float):
+    def fonction_gaussienne(x: np.ndarray, a: float, mu: float, sigma: float, b: float) -> np.ndarray:
         return a * np.exp(-(x - mu) ** 2 / (2 * sigma ** 2)) + b
 
     @staticmethod
-    def fonction_exponentielle(x: np.ndarray, a: float, b: float, c: float, d: float):
+    def fonction_exponentielle(x: np.ndarray, a: float, b: float, c: float, d: float) -> np.ndarray:
         return a * np.exp(x * b + c) + d
 
     @staticmethod
-    def fonction_sinus(x: np.ndarray, a: float, b: float, c: float, d: float):
+    def fonction_sinus(x: np.ndarray, a: float, b: float, c: float, d: float) -> np.ndarray:
         return a * np.sin(x * b + c) + d
 
     @staticmethod
-    def fonction_ln(x: np.ndarray, a: float, b: float, c: float, d: float):
+    def fonction_ln(x: np.ndarray, a: float, b: float, c: float, d: float) -> np.ndarray:
         return a * np.log(x * b + c) + d
