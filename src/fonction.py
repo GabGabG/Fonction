@@ -11,6 +11,7 @@ import pandas as pd
 
 
 # TODO: Finir la doc
+# TODO: permettre erreurs / incertitudes
 # TODO Faire une classe Fonctions qui crée plusieurs objets Fonction
 
 class Fonction:
@@ -291,6 +292,7 @@ class Fonction:
             self._liaison.executer(execution_kwargs)
 
     def afficher_fonction(self, style: Style = Style(), ax: Axes = None):
+        # TODO: afficher la liaison si existe
         c = Courbe(self._x, self._y, label=self.label)
         c.afficher_courbe(False, False, False, style, self._x.label, self._y.label, ax)
 
