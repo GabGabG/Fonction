@@ -4,7 +4,7 @@ from numbers import Number
 from typing import *
 from .style import Marqueurs, Couleurs, Lignes, Style, StyleCourbe
 
-
+#TODO Faire la documentation
 class Courbe:
     __courbe_courante = 0
 
