@@ -8,7 +8,7 @@ class TestsVariablesBase(CustomTestsUnitaires):
         var = ["a", "b", "c"]
         with self.assertRaises(TypeError) as e:
             _Variables(var)
-            self.assertEqual(str(e), "Le type de données '<class 'numpy.str_'>' n'est pas supporté.")
+        self.assertEqual(str(e.exception), "Le type de données '<U1' n'est pas supporté.")
 
     def test_init_type_supporte(self):
         var = np.arange(10, dtype=np.float64)
@@ -143,14 +143,14 @@ class TestsVariablesBase(CustomTestsUnitaires):
         variables = _Variables(var)
         with self.assertRaises(TypeError) as e:
             variables._type_cast_priorite(nouveau_type)
-            self.assertEqual(str(e), "L'argument 'nouveau_type' doit être une classe.")
+        self.assertEqual(str(e.exception), "L'argument 'nouveau_type' doit être une classe.")
 
     def test_type_cast_priorite_type_non_supporte(self):
         var = np.arange(10)
         variables = _Variables(var)
         with self.assertRaises(TypeError) as e:
             variables._type_cast_priorite(str)
-            self.assertEqual(str(e), "Le type de données 'str' n'est pas supporté.")
+        self.assertEqual(str(e.exception), "Le type de données '<class 'str'>' n'est pas supporté.")
 
     def test_type_cast_priorite_meme_types(self):
         var = np.arange(10, dtype=np.uint8)
@@ -908,8 +908,8 @@ class TestsVariablesBase(CustomTestsUnitaires):
         variables = _Variables(var, False)
         with self.assertRaises(ValueError) as e:
             variables.enlever_variables(0, -1)
-            msg = "Veuillez spécifier la positions des éléments à retirer ou les valeurs à retirer, pas les deux."
-            self.assertEqual(str(e), msg)
+        msg = "Veuillez spécifier la position des éléments à retirer ou les valeurs à retirer, pas les deux."
+        self.assertEqual(str(e.exception), msg)
 
     def test_enlever_variables_positions_et_valeurs_none(self):
         nb_vars = 10
@@ -1041,7 +1041,31 @@ class TestsVariablesIndependantes(CustomTestsUnitaires):
         var[-1] = var[0]
         with self.assertRaises(ValueError) as e:
             VariablesIndependantes(var)
-            self.assertEqual(str(e), "Les variables indépendantes doivent être uniques.")
+        self.assertEqual(str(e.exception), "Les variables indépendantes doivent être uniques.")
+
+    def test_setitem_repetitions(self):
+        var = np.arange(100)
+        indep = VariablesIndependantes(var)
+        with self.assertRaises(ValueError) as e:
+            indep[:5] = indep[-5:]
+        self.assertEqual(str(e.exception), "Une variable indépendante ne peut pas avoir de répétitions.")
+
+    def test_setitem_pas_repetitions(self):
+        var = np.arange(100)
+        indep = VariablesIndependantes(var)
+        self.assertNoRaise(indep.__setitem__, [0, -1], [-1, 100])
+
+    def test_ajouter_variables_repetitions(self):
+        var = np.arange(100)
+        indep = VariablesIndependantes(var)
+        with self.assertRaises(ValueError) as e:
+            indep.ajouter_variables([99, 0], [-1, 0])
+        self.assertEqual(str(e.exception), "Une variable indépendante ne peut pas avoir de répétitions.")
+
+    def test_ajouter_variables_pas_repetitions(self):
+        var = np.arange(100)
+        indep = VariablesIndependantes(var)
+        self.assertNoRaise(indep.ajouter_variables, [-1, -2], [0, 0])
 
     def test_bonne_instance(self):
         var = np.arange(1000)
