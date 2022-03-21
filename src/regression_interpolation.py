@@ -5,8 +5,6 @@ from scipy.interpolate import interp1d
 from warnings import warn
 
 
-# TODO: Finir documentation
-
 class _Liaison:
     # Variable statique stipulant si l'addition de _Liaison permet les discontinuités. Par défaut, c'est non.
     __add_permet_discontinuites__ = False
@@ -571,7 +569,7 @@ class InterpolationQuadratique(_InterpolationBase):
         données. Hérite de `_InterpolationBase`.
         :param x_obs: iterable. Observables x, variables indépendantes.
         :param y_obs: iterable. Observable y, variables dépendantes.
-        :param label: str. Label/nom de l'interpolation linéaire. "Interpolation quadratique" par défaut.
+        :param label: str. Label/nom de l'interpolation quadratique. "Interpolation quadratique" par défaut.
         """
         super(InterpolationQuadratique, self).__init__(x_obs, y_obs, label)
 
@@ -599,7 +597,7 @@ class InterpolationCubique(_InterpolationBase):
         Hérite de `_InterpolationBase`.
         :param x_obs: iterable. Observables x, variables indépendantes.
         :param y_obs: iterable. Observable y, variables dépendantes.
-        :param label: str. Label/nom de l'interpolation linéaire. "Interpolation cubique" par défaut.
+        :param label: str. Label/nom de l'interpolation cubique. "Interpolation cubique" par défaut.
         """
         super(InterpolationCubique, self).__init__(x_obs, y_obs, label)
 
@@ -628,7 +626,7 @@ class _RegressionBase(_Liaison):
         différents types de régressions.
         :param x_obs: iterable. Observables x, variables indépendantes.
         :param y_obs: iterable. Observable y, variables dépendantes.
-        :param label: str. Label/nom de l'interpolation linéaire.
+        :param label: str. Label/nom de la régression.
         """
         super(_RegressionBase, self).__init__(x_obs, y_obs, label)
         self._reg_info = {"paramètres optimisés": None, "sigma paramètres": None, "SSe": None,
@@ -648,7 +646,7 @@ class _RegressionBase(_Liaison):
     def regression(self, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray, float]:
         """
         Méthode permettant d'effectuer la régression. Dans le cas présent, comme il s'agit d'une classe générique, elle
-        ne fait que lancer une exception. Les classes filles doivent implémenter leur propres régression.
+        ne fait que lancer une exception. Les classes filles doivent implémenter leur propre régression.
         :param args: arguments. Temporaire, pour que la signature de fonction concorde avec les redéfinitions.
         :param kwargs: arguments "mots-clés". Temporaire, pour que la signature de fonction concorde avec les
         redéfinitions.
@@ -687,7 +685,7 @@ class RegressionPolynomiale(_RegressionBase):
         classe `_RégressionBase`.
         :param x_obs: iterable. Observables x, variables indépendantes.
         :param y_obs: iterable. Observable y, variables dépendantes.
-        :param label: str. Label/nom de l'interpolation linéaire. "Regression polynomiale" par défaut.
+        :param label: str. Label/nom de la régression polynomiale. "Regression polynomiale" par défaut.
         """
         super(RegressionPolynomiale, self).__init__(x_obs, y_obs, label)
         self._reg_info["degré"] = None
@@ -736,7 +734,7 @@ class RegressionPolynomiale(_RegressionBase):
     @classmethod
     def generer_matrice_covariance(cls, matrice_Vandermonde: np.ndarray, SSe: float, nb_obs_x: int, degre: int,
                                    afficher_warning: bool = True) -> np.ndarray:
-        """
+        r"""
         Méthode de classe permettant de générer la matrice de covariance d'une régression. La matrice de covariance est
         définie par $Var(\hat{\beta}) = \hat{\sigma}^2(\textbf{X}^T\textbf{X})^{-1}$ où $\hat{\beta}$ sont les
         estimations des paramètres, $\hat{\sigma}^2$ est l'estimation de la variance  (donnée par $SSe / (n - m)$ où $n$
@@ -770,11 +768,35 @@ class RegressionPolynomiale(_RegressionBase):
 class RegressionGenerale(_RegressionBase):
 
     def __init__(self, x_obs: Iterable, y_obs: Iterable, label: str = "Regression"):
+        """
+        Constructeur de la classe `RegressionGenerale`. Sert à encapsuler une régression générale quelconque (e.g.
+        régression exponentielle, logarithmique, etc.).Hérite de la classe `_RégressionBase`.
+        :param x_obs: iterable. Observables x, variables indépendantes.
+        :param y_obs: iterable. Observable y, variables dépendantes.
+        :param label: str. Label/nom de la régression générale. "Regression" par défaut.
+        """
         super(RegressionGenerale, self).__init__(x_obs, y_obs, label)
 
     def regression(self, fonction: Callable, estimation_initiale_parametres: tuple = None,
                    limites_parametres: tuple = None, permettre_extrapolation: bool = False) -> Tuple[
         np.ndarray, np.ndarray, None]:
+        """
+        Méthode permettant d'effectuer la régression générale. On prend une fonction et on ajuste cette fonction sur le
+        jeu de données.
+        :param fonction: callable. Fonction qu'on veut ajuster sur les données.
+        :param estimation_initiale_parametres: tuple de nombres. Sert d'estimations initiales pour les paramètres à
+        ajuster. `None` par défaut, donc pas d'estimations initiales.
+        :param limites_parametres: tuple. Cet argument peut prendre plusieurs formes. À la base un tuple de deux
+        éléments. Le premier élément est soit un nombre unique ou un itérable de nombres dont la longueur est égale au
+        nombre de paramètres à optimiser. Il s'agit de la borne inférieure (ou des bornes inférieures). Dans le cas où
+        il s'agit d'un nombre unique, cette même borne est utilisée pour tous les paramètres. Le second élément est de
+        la même forme, mais il s'agit de la borne supérieure (ou des bornes supérieures). `None` par défaut, donc pas de
+        contraintes sur les paramètres. On a donc des bornes équivalentes à (-inf, inf).
+        :param permettre_extrapolation: bool. Booléen stipulant si on permet l'extrapolation en-dehors des valeurs
+        observées en x. `False` par défaut, donc on ne permet pas d'extrapolation.
+        :return: les paramètres optimisés (array), l'écart-type des paramètres (array) et `None` (pour garder la
+        cohérence avec la classe mère. Ce `None` correspond à la SSe).
+        """
         self._extrapolation_permise = permettre_extrapolation
         if limites_parametres is None:
             limites_parametres = (-np.inf, np.inf)
@@ -796,16 +818,53 @@ class RegressionGenerale(_RegressionBase):
 
     @staticmethod
     def fonction_gaussienne(x: np.ndarray, a: float, mu: float, sigma: float, b: float) -> np.ndarray:
+        """
+        Méthode statique permettant de modéliser une fonction gaussienne (i.e. normale).
+        :param x: array. Array de valeurs de la variable indépendante.
+        :param a: float. Amplitude de la fonction gaussienne (lorsque b = 0).
+        :param mu: float. Moyenne de la fonction gaussienne.
+        :param sigma: float. Écart-type de la fonction gaussienne.
+        :param b: float. Translation verticale de la fonction gaussienne.
+        :return: la fonction gaussienne évaluée aux points de x.
+        """
         return a * np.exp(-(x - mu) ** 2 / (2 * sigma ** 2)) + b
 
     @staticmethod
     def fonction_exponentielle(x: np.ndarray, a: float, b: float, c: float, d: float) -> np.ndarray:
+        """
+        Méthode statique permettant de modéliser une fonction exponentielle (négative).
+        :param x: array. Array de valeurs de la variable indépendante.
+        :param a: float. Amplitude de la fonction gaussienne (lorsque d = 0).
+        :param b: float. Terme relié à la pente de l'exponentielle au point $x = 0$.
+        :param c: float. Translation horizontale de la fonction exponentielle.
+        :param d: float. Translation verticale de la fonction exponentielle.
+        :return: la fonction exponentielle évaluée aux points de x.
+        """
         return a * np.exp(x * b + c) + d
 
     @staticmethod
     def fonction_sinus(x: np.ndarray, a: float, b: float, c: float, d: float) -> np.ndarray:
+        """
+        Méthode statique permettant de modéliser une fonction sinus.
+        :param x: array. Array de valeurs de la variable indépendante.
+        :param a: float. Amplitude de la fonction gaussienne (lorsque d = 0).
+        :param b: float. Terme relié à la fréquence du sinus. Plus il est petit (mais positif), plus la fréquence est
+        petite.
+        :param c: float. Déphasage/translation horizontale de la fonction sinus.
+        :param d: float. Translation verticale de la fonction sinus.
+        :return: la fonction sinus évaluée aux points de x.
+        """
         return a * np.sin(x * b + c) + d
 
     @staticmethod
     def fonction_ln(x: np.ndarray, a: float, b: float, c: float, d: float) -> np.ndarray:
+        r"""
+        Méthode statique permettant de modéliser une fonction logarithme naturel ($\ln$).
+        :param x: array. Array de valeurs de la variable indépendante.
+        :param a: float. Amplitude de la fonction gaussienne (lorsque d = 0).
+        :param b: float. Terme relié à la pente du logarithme au point $x = 0$.
+        :param c: float. Translation horizontale de la fonction logarithme.
+        :param d: float. Translation verticale de la fonction logarithme.
+        :return: la fonction logarithme naturel évaluée aux points de x.
+        """
         return a * np.log(x * b + c) + d
